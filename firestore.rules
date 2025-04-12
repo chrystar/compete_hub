@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /events/{eventId} {
+      allow read: if request.auth != null && 
+        (resource.data.visibility == 'EventVisibility.public' || 
+         resource.data.organizerId == request.auth.uid);
+      
+      allow create: if request.auth != null && 
+        request.resource.data.organizerId == request.auth.uid;
+      
+      allow update, delete: if request.auth != null && 
+        resource.data.organizerId == request.auth.uid;
+    }
+  }
+}
