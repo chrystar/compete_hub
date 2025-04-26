@@ -55,7 +55,8 @@ class Registration {
       'gender': gender,
       'location': location,
       'registrationDate': Timestamp.fromDate(registrationDate),
-      'paymentStatus': paymentStatus.index,
+      'paymentStatus':
+          paymentStatus.toString(), // Make sure it's converted to string
       'paymentProofUrl': paymentProofUrl,
     };
   }

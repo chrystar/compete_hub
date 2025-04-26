@@ -9,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/event.dart';
 import '../models/registration.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class EventProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -37,6 +39,10 @@ class EventProvider with ChangeNotifier {
     if (_auth.currentUser == null) {
       throw Exception('User must be authenticated to perform this action');
     }
+  }
+
+  bool isEventOrganizer(String eventOrganizerId) {
+    return _auth.currentUser?.uid == eventOrganizerId;
   }
 
   Future<String> createEvent(Event event) async {
@@ -190,7 +196,7 @@ class EventProvider with ChangeNotifier {
     });
   }
 
-  Future<String> registerForEvent(
+  Future<Map<String, dynamic>> registerForEvent(
     String eventId, {
     required String fullName,
     required String email,
@@ -213,11 +219,9 @@ class EventProvider with ChangeNotifier {
         throw Exception('Already registered for this event');
       }
 
-      // Get event details to check fee type
       final eventDoc = await _firestore.collection('events').doc(eventId).get();
       final event = Event.fromJson(eventDoc.data()!, eventDoc.id);
 
-      // Create registration with payment status
       final registration = Registration(
         id: '',
         eventId: eventId,
@@ -237,14 +241,11 @@ class EventProvider with ChangeNotifier {
           .collection('registrations')
           .add(registration.toMap());
 
-      // Also add to event_registrations
-      await _firestore.collection('event_registrations').add({
-        'eventId': eventId,
-        'userId': userId,
-        'paymentStatus': registration.paymentStatus.toString(),
-      });
-
-      return regRef.id; // Return registration ID for payment processing
+      return {
+        'registrationId': regRef.id,
+        'feeType': event.feeType,
+        'amount': event.entryFee,
+      };
     } catch (e) {
       throw Exception('Failed to register for event: $e');
     }
@@ -303,12 +304,29 @@ class EventProvider with ChangeNotifier {
   Stream<List<Event>> getPopularEvents() {
     return _firestore
         .collection('events')
-        .where('registeredParticipants', isGreaterThanOrEqualTo: 5)
-        .where('visibility', isEqualTo: EventVisibility.public.toString())
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Event.fromJson(doc.data(), doc.id))
-            .toList());
+        .asyncMap((snapshot) async {
+      final events = await Future.wait(snapshot.docs.map((doc) async {
+        final event = Event.fromJson(doc.data(), doc.id);
+        final likesSnapshot = await _firestore
+            .collection('events')
+            .doc(doc.id)
+            .collection('likes')
+            .get();
+        final likesCount = likesSnapshot.docs.length;
+
+        return MapEntry(event, likesCount);
+      }));
+
+      // Filter events with likes >= 1 and sort by likes count
+      final popularEvents = events
+          .where((entry) => entry.value >= 1)
+          .map((entry) => entry.key)
+          .toList()
+        ..sort((a, b) => b.startDateTime.compareTo(a.startDateTime));
+
+      return popularEvents;
+    });
   }
 
   Stream<List<Event>> getTodayEvents() {
@@ -554,14 +572,27 @@ class EventProvider with ChangeNotifier {
 
   Stream<List<Registration>> getRegistrationsByStatus(
       String eventId, PaymentStatus status) {
+    print(
+        'Querying registrations - Event: $eventId, Status: ${status.toString()}');
+
     return _firestore
         .collection('registrations')
         .where('eventId', isEqualTo: eventId)
         .where('paymentStatus', isEqualTo: status.toString())
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Registration.fromJson(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) {
+      final registrations = snapshot.docs.map((doc) {
+        final data = doc.data();
+        print('Raw registration data: $data'); // Debug print
+        final registration = Registration.fromJson(data, doc.id);
+        print(
+            'Parsed registration: ${registration.fullName}, Status: ${registration.paymentStatus}');
+        return registration;
+      }).toList();
+
+      print('Total registrations found: ${registrations.length}');
+      return registrations;
+    });
   }
 
   Future<void> updateRegistrationStatus(
@@ -576,5 +607,96 @@ class EventProvider with ChangeNotifier {
     } catch (e) {
       throw Exception('Failed to update registration status: $e');
     }
+  }
+
+  Stream<List<Registration>> getApprovedPaidRegistrations(String eventId) {
+    return _firestore
+        .collection('registrations')
+        .where('eventId', isEqualTo: eventId)
+        .where('paymentStatus', isEqualTo: PaymentStatus.approved.toString())
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Registration.fromJson(doc.data(), doc.id))
+            .toList());
+  }
+
+  // Get reference to likes collection for an event
+  CollectionReference _getLikesCollection(String eventId) {
+    return _firestore.collection('events').doc(eventId).collection('likes');
+  }
+
+  // Stream of likes count for an event
+  Stream<int> getEventLikes(String eventId) {
+    return _getLikesCollection(eventId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
+
+  // Check if current user has liked the event
+  Future<bool> hasUserLikedEvent(String eventId) async {
+    if (_auth.currentUser == null) return false;
+
+    final doc =
+        await _getLikesCollection(eventId).doc(_auth.currentUser!.uid).get();
+    return doc.exists;
+  }
+
+  // Toggle like status for current user
+  Future<void> toggleEventLike(String eventId) async {
+    if (_auth.currentUser == null) return;
+
+    final userLikeRef =
+        _getLikesCollection(eventId).doc(_auth.currentUser!.uid);
+    final userLikeDoc = await userLikeRef.get();
+
+    if (userLikeDoc.exists) {
+      await userLikeRef.delete();
+    } else {
+      await userLikeRef.set({
+        'userId': _auth.currentUser!.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    }
+    notifyListeners();
+  }
+
+  Future<String> uploadEventBanner(File imageFile) async {
+    try {
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final storageRef =
+          FirebaseStorage.instance.ref().child('event_banners').child(fileName);
+
+      final uploadTask = await storageRef.putFile(imageFile);
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('Error uploading banner image: $e');
+      throw Exception('Failed to upload banner image');
+    }
+  }
+
+  Stream<int> getUserEventsCount(String userId) {
+    return _firestore
+        .collection('events')
+        .where('organizerId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
+
+  Stream<int> getUserRegistrationsCount(String userId) {
+    return _firestore
+        .collection('events')
+        .snapshots()
+        .asyncMap((snapshot) async {
+      int count = 0;
+      for (var doc in snapshot.docs) {
+        final registrations = await doc.reference
+            .collection('registrations')
+            .where('userId', isEqualTo: userId)
+            .get();
+        if (registrations.docs.isNotEmpty) count++;
+      }
+      return count;
+    });
   }
 } // End of class

@@ -5,6 +5,8 @@ import 'package:compete_hub/src/models/event_category.dart'
 import 'package:compete_hub/src/providers/event_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../../../providers/auth_provider.dart';
 
 class EventCreation extends StatefulWidget {
@@ -42,6 +44,19 @@ class _EventCreationState extends State<EventCreation> {
   EventFeeType _feeType = EventFeeType.free;
   categories.EventCategory _category =
       categories.EventCategory.games; // Update with prefix
+
+  File? _bannerImage;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _bannerImage = File(pickedFile.path);
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -133,6 +148,36 @@ class _EventCreationState extends State<EventCreation> {
         key: _formKeys[0],
         child: Column(
           children: [
+            InkWell(
+              onTap: _pickImage,
+              child: Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.deepPurple.shade300),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: _bannerImage != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(
+                          _bannerImage!,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.add_photo_alternate,
+                              size: 50, color: Colors.white70),
+                          SizedBox(height: 8),
+                          Text('Add Event Banner',
+                              style: TextStyle(color: Colors.white70)),
+                        ],
+                      ),
+              ),
+            ),
+            const SizedBox(height: 16),
             DropdownButtonFormField<categories.EventCategory>(
               // Update with prefix
               value: _category,
@@ -450,13 +495,13 @@ class _EventCreationState extends State<EventCreation> {
         }
       }
 
-      // Map category names
-      final categoryName = _category.toString().split('.').last;
-      final eventCategory = EventCategory.values.firstWhere(
-        (e) => e.toString().split('.').last == categoryName,
-        orElse: () => EventCategory.sports,
-      );
+      String? bannerUrl;
+      if (_bannerImage != null) {
+        bannerUrl = await Provider.of<EventProvider>(context, listen: false)
+            .uploadEventBanner(_bannerImage!);
+      }
 
+      // Create and submit event
       final event = Event(
         id: '',
         name: _nameController.text.trim(),
@@ -479,7 +524,7 @@ class _EventCreationState extends State<EventCreation> {
             ? null
             : _eligibilityRulesController.text.trim(),
         visibility: _visibility,
-        category: eventCategory,
+        category: _category,
         organizerId: Provider.of<AuthProviders>(context, listen: false)
                 .currentUser
                 ?.uid ??
@@ -493,6 +538,7 @@ class _EventCreationState extends State<EventCreation> {
         bankDetails: _feeType == EventFeeType.paid
             ? _bankDetailsController.text.trim()
             : '',
+        bannerImageUrl: bannerUrl,
       );
 
       await Provider.of<EventProvider>(context, listen: false)
@@ -506,18 +552,17 @@ class _EventCreationState extends State<EventCreation> {
             duration: Duration(seconds: 2),
           ),
         );
-        Navigator.pop(context);
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      throw Exception('Failed to create event: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }

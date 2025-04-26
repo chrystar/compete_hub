@@ -29,7 +29,9 @@ class _MyEventPageState extends State<MyEventPage>
       backgroundColor: AppColors.lightPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.lightPrimary,
-        title: const Text('My Events'),
+        automaticallyImplyLeading: false,
+        title: const Text('My Events', 
+            style: TextStyle(color: Colors.white, fontSize: 24)),
         actions: [
           _buildNotificationBadge(context),
         ],

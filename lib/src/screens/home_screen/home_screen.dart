@@ -19,33 +19,56 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   final Connectivity _connectivity = Connectivity();
   bool _isOnline = true;
+  late TabController _tabController;
   event_category.EventCategory? _selectedCategory;
 
-  @override
-  void initState() {
-    super.initState();
-    _checkConnectivity();
-    _connectivity.onConnectivityChanged.listen((result) {
-      _updateConnectionStatus(result.first);
-    });
-  }
-
   Future<void> _checkConnectivity() async {
-    var connectivityResult = await _connectivity.checkConnectivity();
-    if (connectivityResult.isNotEmpty) {
-      _updateConnectionStatus(connectivityResult.first);
-    } else {
-      _updateConnectionStatus(ConnectivityResult.none);
-    }
+    final connectivityResults = await _connectivity.checkConnectivity();
+    _updateConnectionStatus(connectivityResults.first);
   }
 
   void _updateConnectionStatus(ConnectivityResult result) {
     setState(() {
       _isOnline = result != ConnectivityResult.none;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTabController();
+    _checkConnectivity();
+    _connectivity.onConnectivityChanged.listen((results) {
+      _updateConnectionStatus(results.first);
+    });
+  }
+
+  void _initializeTabController() {
+    _tabController = TabController(
+      length: event_category.EventCategory.values.length + 1,
+      vsync: this,
+    );
+    _tabController.addListener(_handleTabSelection);
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging) {
+      setState(() {
+        _selectedCategory = _tabController.index == 0
+            ? null
+            : event_category.EventCategory.values[_tabController.index - 1];
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -87,51 +110,25 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(Icons.notifications, color: Colors.white),
           const SizedBox(width: 16),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          indicatorColor: Colors.white,
+          dividerColor: Colors.grey.shade900,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.grey.shade600,
+          tabs: [
+            const Tab(text: 'All'),
+            ...event_category.EventCategory.values.map((category) {
+              return Tab(
+                text: category.toString().split('.').last,
+              );
+            }).toList(),
+          ],
+        ),
       ),
       body: Column(
         children: [
-          SizedBox(
-            height: 120,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.all(8),
-              itemCount: event_category
-                  .EventCategory.values.length, // Use prefixed version
-              itemBuilder: (context, index) {
-                final category = event_category
-                    .EventCategory.values[index]; // Use prefixed version
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: GestureDetector(
-                    onTap: () => setState(() {
-                      _selectedCategory =
-                          _selectedCategory == category ? null : category;
-                    }),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundColor: _selectedCategory == category
-                              ? const Color.fromARGB(255, 85, 112, 201)
-                              : const Color.fromARGB(255, 49, 60, 95),
-                          child: Icon(
-                            category.icon,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          category.toString().split('.').last,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
           Expanded(
             child: Consumer<EventProvider>(
               builder: (context, eventProvider, child) {
@@ -190,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.only(left: 10, right: 10,),
                       itemCount: filteredEvents.length,
                       itemBuilder: (context, index) {
                         final event = filteredEvents[index];
@@ -229,6 +226,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _registerForEvent(Event event) async {
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
+
+    if (eventProvider.isEventOrganizer(event.organizerId)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You cannot register for your own event'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -255,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                   builder: (_) => PaymentScreen(
                     event: event,
-                    registrationId: registrationId,
+                    registrationId: registrationId['id'] as String,
                     onPaymentProofUploaded: (proofUrl) {
                       // Handle the uploaded payment proof URL here
                       print('Payment proof uploaded: $proofUrl');

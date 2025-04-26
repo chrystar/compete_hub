@@ -1,5 +1,6 @@
 import 'package:compete_hub/src/models/registration.dart';
 import 'package:compete_hub/src/screens/organizer_mode/screens/news_post_screen.dart';
+import 'package:compete_hub/src/screens/organizer_mode/screens/participants_dashboard.dart';
 import 'package:compete_hub/src/screens/payment_management/payment_management_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +25,12 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
       backgroundColor: AppColors.lightPrimary,
       appBar: AppBar(
         backgroundColor: AppColors.lightPrimary,
-        title: Text(widget.event.name),
+        title: Text(
+          widget.event.name,
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -58,7 +64,8 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ParticipantsTab(event: widget.event),
+                      builder: (_) =>
+                          ParticipantsDashboard(event: widget.event),
                     ),
                   ),
                 ),
@@ -66,13 +73,18 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
                   context,
                   'Payments',
                   Icons.payment,
-                  Colors.green,
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PaymentManagementScreen(event: widget.event),
-                    ),
-                  ),
+                  widget.event.feeType == EventFeeType.free
+                      ? Colors.grey
+                      : Colors.green,
+                  widget.event.feeType == EventFeeType.free
+                      ? null
+                      : () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  PaymentManagementScreen(event: widget.event),
+                            ),
+                          ),
                 ),
                 _buildDashboardCard(
                   context,
@@ -117,8 +129,8 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
 
   Widget _buildStatsRow(BuildContext context) {
     return StreamBuilder<List<Registration>>(
-      stream:
-          Provider.of<EventProvider>(context).getEventRegistrations(widget.event.id),
+      stream: Provider.of<EventProvider>(context)
+          .getEventRegistrations(widget.event.id),
       builder: (context, snapshot) {
         final totalRegistrations = snapshot.data?.length ?? 0;
         final approvedRegistrations = snapshot.data
@@ -169,11 +181,12 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
   }
 
   Widget _buildDashboardCard(BuildContext context, String title, IconData icon,
-      Color color, VoidCallback onTap) {
+      Color color, VoidCallback? onTap) {
+    // Change VoidCallback to VoidCallback?
     return Card(
       color: color.withOpacity(0.2),
       child: InkWell(
-        onTap: onTap,
+        onTap: onTap, // InkWell accepts nullable callback
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),

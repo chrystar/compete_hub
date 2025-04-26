@@ -64,31 +64,35 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: StreamBuilder<bool>(
-          stream: Provider.of<EventProvider>(context)
-              .isRegisteredForEventStream(widget.event.id),
-          builder: (context, snapshot) {
-            final isRegistered = snapshot.data ?? false;
-            return ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    isRegistered ? Colors.green : Colors.deepPurple,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              onPressed:
-                  isRegistered ? null : () => _showRegistrationForm(context),
-              child: Text(
-                isRegistered ? 'Already Registered' : 'Register Now',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            );
-          },
-        ),
+      bottomNavigationBar: Consumer<EventProvider>(
+        builder: (context, provider, _) {
+          final isCreator = provider.isEventOrganizer(widget.event.organizerId);
+          if (isCreator) return const SizedBox.shrink();
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: StreamBuilder<bool>(
+              stream: provider.isRegisteredForEventStream(widget.event.id),
+              builder: (context, snapshot) {
+                final isRegistered = snapshot.data ?? false;
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isRegistered ? Colors.green : Colors.deepPurple,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  onPressed: isRegistered
+                      ? null
+                      : () => _showRegistrationForm(context),
+                  child: Text(
+                    isRegistered ? 'Already Registered' : 'Register Now',
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -102,7 +106,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         event: widget.event,
         onSubmit: (formData) async {
           try {
-            final registrationId =
+            final result =
                 await Provider.of<EventProvider>(context, listen: false)
                     .registerForEvent(
               widget.event.id,
@@ -113,35 +117,34 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               location: formData['location']!,
             );
 
-            if (widget.event.feeType == EventFeeType.paid && mounted) {
+            if (result['feeType'] == EventFeeType.paid && mounted) {
               Navigator.pop(context); // Close form
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => PaymentScreen(
                     event: widget.event,
-                    registrationId: registrationId,
+                    registrationId: result['registrationId'],
                     onPaymentProofUploaded: (File file) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Payment proof uploaded successfully!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Payment proof uploaded successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      // Handle the uploaded file if needed
                     },
                   ),
                 ),
               );
             } else if (mounted) {
-              Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Successfully registered!'),
                   backgroundColor: Colors.green,
                 ),
               );
+              Navigator.pop(context);
             }
           } catch (e) {
             if (mounted) {

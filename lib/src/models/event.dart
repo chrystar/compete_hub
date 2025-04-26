@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'event_category.dart' as event_category;
 
 enum TournamentFormat {
   singleElimination,
@@ -12,8 +13,6 @@ enum EventVisibility { public, private }
 enum EventLocationType { online, offline }
 
 enum EventFeeType { free, paid }
-
-enum EventCategory { sports, music, tech, art }
 
 class RegisteredUser {
   final String id;
@@ -38,7 +37,7 @@ class RegisteredUser {
 class Event {
   final String id;
   final String name;
-  final EventCategory category;
+  final event_category.EventCategory category;
   final String description;
   final DateTime startDateTime;
   final DateTime endDateTime;
@@ -57,6 +56,7 @@ class Event {
   final String organizerWhatsApp;
   final String organizerEmail;
   final String bankDetails;
+  final String? bannerImageUrl;
 
   Event({
     required this.id,
@@ -80,6 +80,7 @@ class Event {
     required this.organizerWhatsApp,
     required this.organizerEmail,
     required this.bankDetails,
+    this.bannerImageUrl,
   });
 
   Map<String, dynamic> toJson() {
@@ -111,6 +112,7 @@ class Event {
       'organizerWhatsApp': organizerWhatsApp,
       'organizerEmail': organizerEmail,
       'bankDetails': bankDetails,
+      'bannerImageUrl': bannerImageUrl,
     };
   }
 
@@ -118,9 +120,9 @@ class Event {
     return Event(
       id: id,
       name: json['name'],
-      category: EventCategory.values.firstWhere(
+      category: event_category.EventCategory.values.firstWhere(
         (e) => e.name == json['category'],
-        orElse: () => EventCategory.sports,
+        orElse: () => event_category.EventCategory.games,
       ),
       description: json['description'],
       startDateTime: (json['startDateTime'] as Timestamp).toDate(),
@@ -146,6 +148,7 @@ class Event {
       organizerWhatsApp: json['organizerWhatsApp'] ?? '',
       organizerEmail: json['organizerEmail'] ?? '',
       bankDetails: json['bankDetails'] ?? '',
+      bannerImageUrl: json['bannerImageUrl'] as String?,
     );
   }
 }
