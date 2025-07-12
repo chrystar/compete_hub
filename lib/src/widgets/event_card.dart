@@ -1,5 +1,6 @@
 import 'package:compete_hub/src/models/registration.dart';
 import 'package:compete_hub/src/widgets/user_avatar.dart';
+import 'package:compete_hub/src/screens/feedback/event_feedback_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -155,6 +156,30 @@ class EventCard extends StatelessWidget {
                               color: Colors.green,
                             ),
                           ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EventFeedbackScreen(event: event),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.feedback, size: 16),
+                            label: const Text('Feedback'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white.withOpacity(0.8),
+                              side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],

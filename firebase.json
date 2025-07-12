@@ -1,1 +1,28 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"event-planning-app-43083","appId":"1:126212317099:android:0c75597bb7f64be9f03cee","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"event-planning-app-43083","configurations":{"android":"1:126212317099:android:0c75597bb7f64be9f03cee","ios":"1:126212317099:ios:ac4b5af87de34463f03cee","web":"1:126212317099:web:634ffe7a99451f80f03cee","windows":"1:126212317099:web:84113af2338bb9eaf03cee"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "event-planning-app-43083",
+          "appId": "1:126212317099:android:0c75597bb7f64be9f03cee",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "event-planning-app-43083",
+          "configurations": {
+            "android": "1:126212317099:android:0c75597bb7f64be9f03cee",
+            "ios": "1:126212317099:ios:ac4b5af87de34463f03cee",
+            "web": "1:126212317099:web:634ffe7a99451f80f03cee",
+            "windows": "1:126212317099:web:84113af2338bb9eaf03cee"
+          }
+        }
+      }
+    }
+  }
+}

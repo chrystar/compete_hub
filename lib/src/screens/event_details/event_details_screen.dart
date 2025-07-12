@@ -4,8 +4,11 @@ import 'dart:io';
 import '../../../core/utils/app_colors.dart';
 import '../../models/event.dart';
 import '../../providers/event_provider.dart';
+import '../../providers/feedback_provider.dart';
 import '../../widgets/registration_form.dart';
+import '../../widgets/feedback_display.dart';
 import '../payment/payment_screen.dart';
+import '../feedback/event_feedback_screen.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final Event event;
@@ -16,7 +19,21 @@ class EventDetailsScreen extends StatefulWidget {
   State<EventDetailsScreen> createState() => _EventDetailsScreenState();
 }
 
-class _EventDetailsScreenState extends State<EventDetailsScreen> {
+class _EventDetailsScreenState extends State<EventDetailsScreen> 
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,45 +41,36 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.lightPrimary,
         title: Text(widget.event.name),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Description',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              widget.event.description,
-              style: TextStyle(color: Colors.white),
-            ),
-            SizedBox(height: 24),
-            _buildInfoSection('Date & Time', [
-              'Starts: ${_formatDateTime(widget.event.startDateTime)}',
-              'Ends: ${_formatDateTime(widget.event.endDateTime)}',
-              'Registration Deadline: ${_formatDateTime(widget.event.entryDeadline)}',
-            ]),
-            _buildInfoSection('Location', [
-              widget.event.locationType.toString().split('.').last,
-              if (widget.event.location != null) widget.event.location!,
-            ]),
-            _buildInfoSection('Tournament Details', [
-              'Format: ${widget.event.format.toString().split('.').last}',
-              'Max Participants: ${widget.event.maxParticipants}',
-              'Entry Fee: ${widget.event.feeType == EventFeeType.free ? 'Free' : '\$${widget.event.entryFee}'}',
-            ]),
-            if (widget.event.eligibilityRules != null)
-              _buildInfoSection(
-                  'Eligibility Rules', [widget.event.eligibilityRules!]),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.feedback),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventFeedbackScreen(event: widget.event),
+                ),
+              );
+            },
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withOpacity(0.6),
+          indicatorColor: Colors.amber,
+          tabs: const [
+            Tab(text: 'Details'),
+            Tab(text: 'Feedback'),
           ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildDetailsTab(),
+          _buildFeedbackTab(),
+        ],
       ),
       bottomNavigationBar: Consumer<EventProvider>(
         builder: (context, provider, _) {
@@ -94,6 +102,73 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildDetailsTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Description',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            widget.event.description,
+            style: TextStyle(color: Colors.white),
+          ),
+          SizedBox(height: 24),
+          _buildInfoSection('Date & Time', [
+            'Starts: ${_formatDateTime(widget.event.startDateTime)}',
+            'Ends: ${_formatDateTime(widget.event.endDateTime)}',
+            'Registration Deadline: ${_formatDateTime(widget.event.entryDeadline)}',
+          ]),
+          _buildInfoSection('Location', [
+            widget.event.locationType.toString().split('.').last,
+            if (widget.event.location != null) widget.event.location!,
+          ]),
+          _buildInfoSection('Tournament Details', [
+            'Format: ${widget.event.format.toString().split('.').last}',
+            'Max Participants: ${widget.event.maxParticipants}',
+            'Entry Fee: ${widget.event.feeType == EventFeeType.free ? 'Free' : '\$${widget.event.entryFee}'}',
+          ]),
+          if (widget.event.eligibilityRules != null)
+            _buildInfoSection(
+                'Eligibility Rules', [widget.event.eligibilityRules!]),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeedbackTab() {
+    return Consumer<FeedbackProvider>(
+      builder: (context, feedbackProvider, child) {
+        return FutureBuilder<bool>(
+          future: feedbackProvider.canUserProvideFeedback(widget.event.id),
+          builder: (context, snapshot) {
+            final canProvideFeedback = snapshot.data ?? false;
+            
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: FeedbackDisplay(
+                event: widget.event,
+                showSubmitButton: canProvideFeedback,
+                onFeedbackSubmitted: () {
+                  // Refresh feedback data
+                  setState(() {});
+                },
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

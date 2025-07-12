@@ -2,6 +2,7 @@ import 'package:compete_hub/core/utils/app_colors.dart';
 import 'package:compete_hub/firebase_options.dart';
 import 'package:compete_hub/providers/auth_provider.dart';
 import 'package:compete_hub/src/providers/event_provider.dart';
+import 'package:compete_hub/src/providers/feedback_provider.dart';
 import 'package:compete_hub/src/auth/sign_up.dart';
 import 'package:compete_hub/src/providers/news_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -32,7 +33,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => EventProvider(),
         ),
-    
+        ChangeNotifierProvider(
+          create: (_) => FeedbackProvider(),
+        ),
         ChangeNotifierProvider(create: (_) => NewsProvider()),
       ],
       child: MaterialApp(

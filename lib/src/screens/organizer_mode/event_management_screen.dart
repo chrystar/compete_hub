@@ -2,6 +2,7 @@ import 'package:compete_hub/src/models/registration.dart';
 import 'package:compete_hub/src/screens/organizer_mode/screens/news_post_screen.dart';
 import 'package:compete_hub/src/screens/organizer_mode/screens/participants_dashboard.dart';
 import 'package:compete_hub/src/screens/payment_management/payment_management_screen.dart';
+import 'package:compete_hub/src/screens/feedback/event_feedback_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/utils/app_colors.dart';
@@ -111,6 +112,21 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
                   Icons.chat,
                   Colors.red,
                   () {}, // Add live chat navigation
+                ),
+                _buildDashboardCard(
+                  context,
+                  'Feedback',
+                  Icons.feedback,
+                  Colors.pink,
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EventFeedbackScreen(
+                        event: widget.event,
+                        canSubmitFeedback: false,
+                      ),
+                    ),
+                  ),
                 ),
                 _buildDashboardCard(
                   context,
