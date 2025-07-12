@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/utils/app_colors.dart';
 import '../models/feedback.dart';
 import '../models/event.dart';
 import '../providers/feedback_provider.dart';
@@ -57,7 +56,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.lightPrimary,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: EdgeInsets.only(
@@ -100,7 +99,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
       children: [
         Icon(
           widget.isDuringEvent ? Icons.live_help : Icons.rate_review,
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.primary,
           size: 28,
         ),
         const SizedBox(width: 12),
@@ -111,8 +110,8 @@ class _FeedbackFormState extends State<FeedbackForm> {
               Text(
                 widget.existingFeedback != null ? 'Edit Feedback' : 
                 widget.isDuringEvent ? 'Live Feedback' : 'Event Feedback',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -120,7 +119,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
               Text(
                 widget.event.name,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
                 ),
               ),
@@ -129,7 +128,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
         ),
         IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurface),
         ),
       ],
     );
@@ -139,10 +138,10 @@ class _FeedbackFormState extends State<FeedbackForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Rate Your Experience',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -160,13 +159,13 @@ class _FeedbackFormState extends State<FeedbackForm> {
         children: [
           Expanded(
             flex: 2,
-            child: Text(
-              _getFeedbackTypeLabel(type),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
+            child:              Text(
+                _getFeedbackTypeLabel(type),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 16,
+                ),
               ),
-            ),
           ),
           Expanded(
             flex: 3,
@@ -184,7 +183,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
                     rating <= (_ratings[type] ?? 0) ? Icons.star : Icons.star_border,
                     color: rating <= (_ratings[type] ?? 0) 
                         ? Colors.amber 
-                        : Colors.white.withOpacity(0.5),
+                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                     size: 32,
                   ),
                 );
@@ -200,10 +199,10 @@ class _FeedbackFormState extends State<FeedbackForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Additional Comments',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -216,19 +215,19 @@ class _FeedbackFormState extends State<FeedbackForm> {
             hintText: widget.isDuringEvent 
                 ? 'Share your thoughts about the ongoing event...'
                 : 'Tell us about your experience...',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+            hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.1),
+            fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.amber, width: 2),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
             ),
           ),
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           validator: (value) {
             if (widget.isDuringEvent && (value == null || value.trim().isEmpty)) {
               return 'Please provide some feedback for live events';
@@ -244,13 +243,13 @@ class _FeedbackFormState extends State<FeedbackForm> {
     return Column(
       children: [
         SwitchListTile(
-          title: const Text(
+          title: Text(
             'Submit anonymously',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
           subtitle: Text(
             'Your name will not be shown with this feedback',
-            style: TextStyle(color: Colors.white.withOpacity(0.7)),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           value: _isAnonymous,
           onChanged: (value) {
@@ -258,7 +257,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
               _isAnonymous = value;
             });
           },
-          activeColor: Colors.amber,
+          activeColor: Theme.of(context).colorScheme.primary,
           contentPadding: EdgeInsets.zero,
         ),
       ],
@@ -271,20 +270,20 @@ class _FeedbackFormState extends State<FeedbackForm> {
       child: ElevatedButton(
         onPressed: _isSubmitting ? null : _submitFeedback,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.amber,
-          foregroundColor: Colors.black,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
         child: _isSubmitting
-            ? const SizedBox(
+            ? SizedBox(
                 height: 20,
                 width: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
                 ),
               )
             : Text(

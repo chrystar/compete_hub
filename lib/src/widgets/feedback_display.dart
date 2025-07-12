@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/utils/app_colors.dart';
 import '../models/feedback.dart';
 import '../models/event.dart';
 import '../providers/feedback_provider.dart';
@@ -40,10 +39,10 @@ class FeedbackDisplay extends StatelessWidget {
   Widget _buildHeader(BuildContext context, FeedbackProvider feedbackProvider) {
     return Row(
       children: [
-        const Text(
+        Text(
           'Event Feedback',
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -510,9 +509,9 @@ class AllFeedbackScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: const Text('All Feedback'),
       ),
       body: Padding(

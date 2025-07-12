@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../core/utils/app_colors.dart';
 import '../../models/event.dart';
 import '../../models/feedback.dart';
 import '../../providers/feedback_provider.dart';
@@ -64,17 +63,17 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         title: const Text(
           'Event Feedback',
-          style: TextStyle(color: Colors.white),
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white.withOpacity(0.6),
+          labelColor: Theme.of(context).colorScheme.onPrimary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
           indicatorColor: Colors.amber,
           tabs: const [
             Tab(text: 'Overview'),
@@ -196,8 +195,8 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
         children: [
           Text(
             widget.event.name,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onBackground,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -206,29 +205,28 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
           Text(
             widget.event.description,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Icon(
-                _isEventOngoing ? Icons.live_tv : Icons.event,
-                color: _isEventOngoing ? Colors.red : Colors.white.withOpacity(0.7),
-                size: 16,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                _isEventOngoing ? 'Event is ongoing' : 'Event completed',
-                style: TextStyle(
-                  color: _isEventOngoing ? Colors.red : Colors.white.withOpacity(0.7),
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+          const SizedBox(height: 12),            Row(
+              children: [
+                Icon(
+                  _isEventOngoing ? Icons.live_tv : Icons.event,
+                  color: _isEventOngoing ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: 16,
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 8),
+                Text(
+                  _isEventOngoing ? 'Event is ongoing' : 'Event completed',
+                  style: TextStyle(
+                    color: _isEventOngoing ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

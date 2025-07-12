@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import '../../../core/utils/app_colors.dart';
 import '../../models/event.dart';
 import '../../providers/event_provider.dart';
 import '../../providers/feedback_provider.dart';
@@ -37,9 +36,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         title: Text(widget.event.name),
         actions: [
           IconButton(
@@ -56,8 +56,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white.withOpacity(0.6),
+          labelColor: Theme.of(context).colorScheme.onPrimary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
           indicatorColor: Colors.amber,
           tabs: const [
             Tab(text: 'Details'),
@@ -86,7 +86,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                 return ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        isRegistered ? Colors.green : Colors.deepPurple,
+                        isRegistered ? Colors.green : Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   onPressed: isRegistered
@@ -94,7 +95,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                       : () => _showRegistrationForm(context),
                   child: Text(
                     isRegistered ? 'Already Registered' : 'Register Now',
-                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                    style: const TextStyle(fontSize: 16),
                   ),
                 );
               },
@@ -114,7 +115,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           Text(
             'Description',
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onBackground,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -122,7 +123,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           SizedBox(height: 8),
           Text(
             widget.event.description,
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).colorScheme.onBackground),
           ),
           SizedBox(height: 24),
           _buildInfoSection('Date & Time', [
@@ -243,7 +244,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         Text(
           title,
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onBackground,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -251,7 +252,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         SizedBox(height: 8),
         ...details.map((detail) => Padding(
               padding: EdgeInsets.only(bottom: 4),
-              child: Text(detail, style: TextStyle(color: Colors.white)),
+              child: Text(detail, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             )),
         SizedBox(height: 24),
       ],
