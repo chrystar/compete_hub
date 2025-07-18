@@ -39,7 +39,6 @@ class SignUpScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProviders>(context, listen: false);
 
     if (_formKey.currentState!.validate()) {
-      String fullName = _fullNameController.text.trim();
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
       String confirmPassword = _confirmPasswordController.text.trim();
@@ -109,7 +108,7 @@ class SignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: AppColors.lightBackground,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.only(top: 100, left: 20, right: 20),
@@ -126,51 +125,64 @@ class SignUpScreen extends StatelessWidget {
                     Text(
                       'C-vent',
                       style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.lightPrimaryText,
+                        color: AppColors.lightPrimary,
+                        letterSpacing: 1.2,
                       ),
                     ),
-                    SizedBox(height: 5),
+                    SizedBox(height: 8),
                     Padding(
                       padding: const EdgeInsets.only(left: 30, right: 30),
                       child: Text(
-                        'Unleash your full potentials, Sign Up to get stated',
+                        'Unleash your full potential, Sign Up to get started',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontWeight: FontWeight.w300,
-                          color: AppColors.lightPrimaryText,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.lightOnSurfaceVariant,
+                          height: 1.4,
                         ),
                       ),
                     )
                   ],
                 ),
 
-                SizedBox(
-                  height: 50,
-                ),
+                SizedBox(height: 60),
                 TextFormField(
                   controller: _fullNameController,
                   keyboardType: TextInputType.text,
+                  style: TextStyle(color: AppColors.lightOnSurface),
                   decoration: InputDecoration(
                     labelText: 'Full Name',
-                    labelStyle: const TextStyle(
+                    labelStyle: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey,
+                      color: AppColors.lightOnSurfaceVariant,
                     ),
+                    filled: true,
+                    fillColor: AppColors.lightSurfaceVariant,
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade700),
-                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.lightOutline),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade700),
-                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.lightPrimary, width: 2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    prefixIcon: const Icon(
-                      Icons.person,
-                      size: 18,
-                      color: Colors.white,
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.lightError),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.lightError, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.person_outline,
+                      size: 20,
+                      color: AppColors.lightPrimary,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -179,28 +191,42 @@ class SignUpScreen extends StatelessWidget {
                     return null;
                   },
                 ),
-                const SizedBox(height: 12.0),
+                const SizedBox(height: 16.0),
                 // Email Text Field
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(color: AppColors.lightOnSurface),
                   decoration: InputDecoration(
-                    labelText: 'Email',
-                    labelStyle:
-                        const TextStyle(fontSize: 14, color: Colors.grey),
+                    labelText: 'Email Address',
+                    labelStyle: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.lightOnSurfaceVariant,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.lightSurfaceVariant,
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade700),
-                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.lightOutline),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade700),
-                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.lightPrimary, width: 2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    prefixIcon: const Icon(
-                      Icons.email,
-                      size: 18,
-                      color: Colors.white,
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.lightError),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.lightError, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.email_outlined,
+                      size: 20,
+                      color: AppColors.lightPrimary,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -212,28 +238,42 @@ class SignUpScreen extends StatelessWidget {
                     return null;
                   },
                 ),
-                const SizedBox(height: 12.0),
+                const SizedBox(height: 16.0),
                 // Password Text Field
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
+                  style: TextStyle(color: AppColors.lightOnSurface),
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle:
-                        const TextStyle(fontSize: 14, color: Colors.grey),
+                    labelStyle: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.lightOnSurfaceVariant,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.lightSurfaceVariant,
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade700),
-                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.lightOutline),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade700),
-                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.lightPrimary, width: 2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    prefixIcon: const Icon(
-                      Icons.lock,
-                      size: 18,
-                      color: Colors.white,
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.lightError),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.lightError, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.lock_outline,
+                      size: 20,
+                      color: AppColors.lightPrimary,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -245,28 +285,42 @@ class SignUpScreen extends StatelessWidget {
                     return null;
                   },
                 ),
-                const SizedBox(height: 12.0),
+                const SizedBox(height: 16.0),
                 // Confirm Password Text Field
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: true,
+                  style: TextStyle(color: AppColors.lightOnSurface),
                   decoration: InputDecoration(
                     labelText: 'Confirm Password',
-                    labelStyle:
-                        const TextStyle(fontSize: 14, color: Colors.grey),
+                    labelStyle: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.lightOnSurfaceVariant,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.lightSurfaceVariant,
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade700),
-                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.lightOutline),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.white),
-                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: AppColors.lightPrimary, width: 2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    prefixIcon: const Icon(
-                      Icons.lock,
-                      size: 18,
-                      color: Colors.white,
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.lightError),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.lightError, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.lock_outline,
+                      size: 20,
+                      color: AppColors.lightPrimary,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -278,91 +332,148 @@ class SignUpScreen extends StatelessWidget {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 32.0),
                 // Sign Up Button
-                GestureDetector(
-                  onTap: () => _handleSignUp(context),
-                  child: Container(
-                    padding: EdgeInsets.only(top: 12, bottom: 12),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.deepPurple.shade700,
-                          Colors.blue.shade900,
-                          Colors.blue.shade900,
-                          // Colors.blue,
-                          Colors.deepPurple.shade700,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(15),
+                Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.lightPrimary,
+                        AppColors.lightPrimaryVariant,
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
                     ),
-                    child: Center(
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(
-                          fontSize: 18.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.lightPrimary.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _handleSignUp(context),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Center(
+                        child: Text(
+                          'Create Account',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: AppColors.lightOnPrimary,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 20,
-                ),
+                SizedBox(height: 24),
                 RichText(
-                  text: TextSpan(children: [
-                    TextSpan(
-                      text: "Already have an account? ",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    TextSpan(
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => LoginScreen(),
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Already have an account? ",
+                        style: TextStyle(
+                          color: AppColors.lightOnSurfaceVariant,
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => LoginScreen(),
+                                ),
                               ),
-                            ),
-                      text: 'Login',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
+                        text: 'Sign In',
+                        style: TextStyle(
+                          color: AppColors.lightPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: AppColors.lightDivider)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'OR',
+                        style: TextStyle(
+                          color: AppColors.lightOnSurfaceVariant,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ]),
+                    Expanded(child: Divider(color: AppColors.lightDivider)),
+                  ],
                 ),
-                SizedBox(height: 50),
+                SizedBox(height: 24),
                 Container(
-                  padding: EdgeInsets.only(top: 12, bottom: 12),
+                  width: double.infinity,
+                  height: 56,
                   decoration: BoxDecoration(
-                      color: Colors.grey.shade800.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(15)),
-                  child: Center(
-                    child: const Text(
-                      'Or SignUp with Google',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        color: AppColors.lightPrimaryText,
+                    color: AppColors.lightSurface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.lightOutline),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        // TODO: Implement Google Sign Up
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.g_mobiledata,
+                            size: 24,
+                            color: AppColors.lightPrimary,
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'Continue with Google',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.lightOnSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
+                SizedBox(height: 32),
               ],
             ),
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _fullNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    //super.dispose(); //StatelessWidget doesn't have dispose
   }
 }
 

@@ -22,15 +22,15 @@ class EventManagementScreen extends StatefulWidget {
 class _EventManagementScreenState extends State<EventManagementScreen> {
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: colorScheme.primary,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
+        backgroundColor: colorScheme.primary,
         title: Text(
           widget.event.name,
-          style: TextStyle(
-            color: Colors.white,
-          ),
+          style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
         ),
       ),
       body: SingleChildScrollView(
@@ -38,16 +38,12 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Event Dashboard',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: textTheme.headlineSmall?.copyWith(color: colorScheme.onPrimary, fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
-            _buildStatsRow(context),
+            _buildStatsRow(context, colorScheme, textTheme),
             const SizedBox(height: 24),
             GridView.count(
               shrinkWrap: true,
@@ -61,12 +57,12 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
                   context,
                   'Participants',
                   Icons.people,
-                  Colors.blue,
+                  colorScheme.secondary,
+                  colorScheme.onSecondary,
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          ParticipantsDashboard(event: widget.event),
+                      builder: (_) => ParticipantsDashboard(event: widget.event),
                     ),
                   ),
                 ),
@@ -75,15 +71,15 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
                   'Payments',
                   Icons.payment,
                   widget.event.feeType == EventFeeType.free
-                      ? Colors.grey
-                      : Colors.green,
+                      ? colorScheme.surfaceVariant
+                      : colorScheme.tertiary ?? colorScheme.secondary,
+                  colorScheme.onSurface,
                   widget.event.feeType == EventFeeType.free
                       ? null
                       : () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  PaymentManagementScreen(event: widget.event),
+                              builder: (_) => PaymentManagementScreen(event: widget.event),
                             ),
                           ),
                 ),
@@ -91,14 +87,16 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
                   context,
                   'Brackets',
                   Icons.category,
-                  Colors.orange,
-                  () {}, // Add bracket management navigation
+                  colorScheme.primaryContainer,
+                  colorScheme.onPrimaryContainer,
+                  () {},
                 ),
                 _buildDashboardCard(
                   context,
                   'Announcements',
                   Icons.campaign,
-                  Colors.purple,
+                  colorScheme.secondaryContainer,
+                  colorScheme.onSecondaryContainer,
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -110,14 +108,16 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
                   context,
                   'Live Chat',
                   Icons.chat,
-                  Colors.red,
-                  () {}, // Add live chat navigation
+                  colorScheme.error,
+                  colorScheme.onError,
+                  () {},
                 ),
                 _buildDashboardCard(
                   context,
                   'Feedback',
                   Icons.feedback,
-                  Colors.pink,
+                  colorScheme.primary,
+                  colorScheme.onPrimary,
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -132,8 +132,9 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
                   context,
                   'Results',
                   Icons.emoji_events,
-                  Colors.amber,
-                  () {}, // Add results management navigation
+                  colorScheme.secondary,
+                  colorScheme.onSecondary,
+                  () {},
                 ),
               ],
             ),
@@ -143,7 +144,7 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
     );
   }
 
-  Widget _buildStatsRow(BuildContext context) {
+  Widget _buildStatsRow(BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
     return StreamBuilder<List<Registration>>(
       stream: Provider.of<EventProvider>(context)
           .getEventRegistrations(widget.event.id),
@@ -161,16 +162,16 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildStatCard('Total', totalRegistrations, Colors.blue),
-            _buildStatCard('Approved', approvedRegistrations, Colors.green),
-            _buildStatCard('Pending', pendingRegistrations, Colors.orange),
+            _buildStatCard('Total', totalRegistrations, colorScheme.secondary, colorScheme.onSecondary, textTheme),
+            _buildStatCard('Approved', approvedRegistrations, colorScheme.tertiary ?? colorScheme.secondary, colorScheme.onTertiary ?? colorScheme.onSecondary, textTheme),
+            _buildStatCard('Pending', pendingRegistrations, colorScheme.error, colorScheme.onError, textTheme),
           ],
         );
       },
     );
   }
 
-  Widget _buildStatCard(String title, int value, Color color) {
+  Widget _buildStatCard(String title, int value, Color color, Color onColor, TextTheme textTheme) {
     return Card(
       color: color.withOpacity(0.2),
       child: Padding(
@@ -179,7 +180,7 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
           children: [
             Text(
               value.toString(),
-              style: TextStyle(
+              style: textTheme.headlineSmall?.copyWith(
                 color: color,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -188,7 +189,7 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
             const SizedBox(height: 4),
             Text(
               title,
-              style: const TextStyle(color: Colors.white),
+              style: textTheme.bodyMedium?.copyWith(color: onColor),
             ),
           ],
         ),
@@ -196,13 +197,12 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
     );
   }
 
-  Widget _buildDashboardCard(BuildContext context, String title, IconData icon,
-      Color color, VoidCallback? onTap) {
-    // Change VoidCallback to VoidCallback?
+  Widget _buildDashboardCard(BuildContext context, String title, IconData icon, Color color, Color onColor, VoidCallback? onTap) {
+    final textTheme = Theme.of(context).textTheme;
     return Card(
       color: color.withOpacity(0.2),
       child: InkWell(
-        onTap: onTap, // InkWell accepts nullable callback
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -213,8 +213,8 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
               const SizedBox(height: 8),
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: textTheme.titleMedium?.copyWith(
+                  color: onColor,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),

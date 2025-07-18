@@ -23,8 +23,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
-      color: AppColors.lightPrimary,
+      color: colorScheme.background,
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom + 16,
         top: 16,
@@ -38,8 +40,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
           children: [
             Text(
               'Registration Details',
-              style: TextStyle(
-                color: Colors.white,
+              style: textTheme.titleLarge?.copyWith(
+                color: colorScheme.primary,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -49,6 +51,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
               label: 'Full Name',
               onSaved: (v) => _formData['fullName'] = v ?? '',
               validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
             ),
             const SizedBox(height: 8),
             _buildTextField(
@@ -56,6 +60,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
               onSaved: (v) => _formData['email'] = v ?? '',
               validator: (v) => !v!.contains('@') ? 'Invalid email' : null,
               keyboardType: TextInputType.emailAddress,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
             ),
             const SizedBox(height: 8),
             _buildTextField(
@@ -63,16 +69,21 @@ class _RegistrationFormState extends State<RegistrationForm> {
               onSaved: (v) => _formData['phone'] = v ?? '',
               validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
               keyboardType: TextInputType.phone,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: _selectedGender,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Gender',
-                labelStyle: TextStyle(color: Colors.white70),
+                labelStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.3)),
+                ),
               ),
-              dropdownColor: AppColors.lightPrimary,
-              style: TextStyle(color: Colors.white),
+              dropdownColor: colorScheme.surface,
+              style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
               items: ['Male', 'Female']
                   .map((g) => DropdownMenuItem(value: g, child: Text(g)))
                   .toList(),
@@ -84,26 +95,29 @@ class _RegistrationFormState extends State<RegistrationForm> {
               label: 'Location',
               onSaved: (v) => _formData['location'] = v ?? '',
               validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
             ),
             const SizedBox(height: 16),
             if (widget.event.feeType == EventFeeType.paid)
               Text(
                 'Entry Fee: \$${widget.event.entryFee}',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: textTheme.bodyLarge?.copyWith(color: colorScheme.primary, fontSize: 16),
               ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: colorScheme.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: _submit,
                 child: Text(
                   widget.event.feeType == EventFeeType.paid
                       ? 'Continue to Payment'
                       : 'Register',
+                  style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
                 ),
               ),
             ),
@@ -118,16 +132,18 @@ class _RegistrationFormState extends State<RegistrationForm> {
     required Function(String?) onSaved,
     required String? Function(String?) validator,
     TextInputType? keyboardType,
+    required ColorScheme colorScheme,
+    required TextTheme textTheme,
   }) {
     return TextFormField(
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white70),
+        labelStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
         enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white30),
+          borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.3)),
         ),
       ),
-      style: TextStyle(color: Colors.white),
+      style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
       onSaved: onSaved,
       validator: validator,
       keyboardType: keyboardType,

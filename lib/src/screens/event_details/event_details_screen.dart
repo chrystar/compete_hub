@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
+import '../../../core/utils/app_colors.dart';
 import '../../models/event.dart';
 import '../../providers/event_provider.dart';
 import '../../providers/feedback_provider.dart';
@@ -33,43 +33,118 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     _tabController.dispose();
     super.dispose();
   }
+  
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        title: Text(widget.event.name),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.feedback),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EventFeedbackScreen(event: widget.event),
+      backgroundColor: colorScheme.background,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 250,
+            pinned: true,
+            backgroundColor: colorScheme.surface,
+            foregroundColor: colorScheme.onSurface,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                widget.event.name,
+                style: textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
-              );
-            },
+              ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      colorScheme.surfaceVariant,
+                      colorScheme.primaryContainer.withOpacity(0.6),
+                    ],
+                  ),
+                ),
+                child: widget.event.bannerImageUrl != null
+                    ? Image.network(
+                        widget.event.bannerImageUrl!,
+                        fit: BoxFit.cover,
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.event,
+                          size: 80,
+                          color: colorScheme.onPrimary,
+                        ),
+                      ),
+              ),
+            ),
+            actions: [
+              Container(
+                margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.feedback_outlined,
+                    color: colorScheme.primary,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EventFeedbackScreen(event: widget.event),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Theme.of(context).colorScheme.onPrimary,
-          unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
-          indicatorColor: Colors.amber,
-          tabs: const [
-            Tab(text: 'Details'),
-            Tab(text: 'Feedback'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildDetailsTab(),
-          _buildFeedbackTab(),
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+              child: Column(
+                children: [
+                  TabBar(
+                    controller: _tabController,
+                    labelColor: colorScheme.primary,
+                    unselectedLabelColor: colorScheme.onSurfaceVariant,
+                    indicatorColor: colorScheme.primary,
+                    labelStyle: textTheme.labelLarge?.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    tabs: const [
+                      Tab(text: 'Details'),
+                      Tab(text: 'Feedback'),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 600,
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildDetailsTab(),
+                        _buildFeedbackTab(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: Consumer<EventProvider>(
@@ -77,25 +152,67 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           final isCreator = provider.isEventOrganizer(widget.event.organizerId);
           if (isCreator) return const SizedBox.shrink();
 
-          return Padding(
+          return Container(
             padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
             child: StreamBuilder<bool>(
               stream: provider.isRegisteredForEventStream(widget.event.id),
               builder: (context, snapshot) {
                 final isRegistered = snapshot.data ?? false;
-                return ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isRegistered ? Colors.green : Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                return Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: isRegistered
+                        ? LinearGradient(
+                            colors: [
+                              colorScheme.surfaceVariant,
+                              colorScheme.surfaceVariant,
+                            ],
+                          )
+                        : LinearGradient(
+                            colors: [
+                              colorScheme.primary,
+                              colorScheme.primaryContainer,
+                            ],
+                          ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: isRegistered
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: colorScheme.primary.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                   ),
-                  onPressed: isRegistered
-                      ? null
-                      : () => _showRegistrationForm(context),
-                  child: Text(
-                    isRegistered ? 'Already Registered' : 'Register Now',
-                    style: const TextStyle(fontSize: 16),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: isRegistered ? null : () => _showRegistrationForm(context),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Center(
+                        child: Text(
+                          isRegistered ? 'Already Registered' : 'Register Now',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: colorScheme.onPrimary,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 );
               },
@@ -107,69 +224,217 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   }
 
   Widget _buildDetailsTab() {
-    return SingleChildScrollView(
+    return Container(
+      color: AppColors.lightBackground,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInfoCard(
+              'Description',
+              widget.event.description,
+              Icons.description_outlined,
+            ),
+            const SizedBox(height: 16),
+            _buildInfoCard(
+              'Location',
+              widget.event.location ?? 'TBD',
+              Icons.location_on_outlined,
+            ),
+            const SizedBox(height: 16),
+            _buildInfoCard(
+              'Date & Time',
+              '${widget.event.startDateTime.day}/${widget.event.startDateTime.month}/${widget.event.startDateTime.year} at ${widget.event.startDateTime.hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')}',
+              Icons.schedule_outlined,
+            ),
+            const SizedBox(height: 16),
+            _buildInfoCard(
+              'Entry Fee',
+              (widget.event.entryFee ?? 0) > 0 ? '\$${widget.event.entryFee}' : 'Free',
+              Icons.payments_outlined,
+            ),
+            const SizedBox(height: 16),
+            _buildInfoCard(
+              'Max Participants',
+              widget.event.maxParticipants.toString(),
+              Icons.group_outlined,
+            ),
+            const SizedBox(height: 16),
+            _buildInfoCard(
+              'Format',
+              widget.event.format.toString().split('.').last,
+              Icons.format_list_bulleted_outlined,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(String title, String content, IconData icon) {
+    return Container(
       padding: const EdgeInsets.all(16),
-      child: Column(
+      decoration: BoxDecoration(
+        color: AppColors.lightSurface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Description',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onBackground,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.lightPrimary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: AppColors.lightPrimary,
+              size: 20,
             ),
           ),
-          SizedBox(height: 8),
-          Text(
-            widget.event.description,
-            style: TextStyle(color: Theme.of(context).colorScheme.onBackground),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: AppColors.lightOnSurface,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  content,
+                  style: TextStyle(
+                    color: AppColors.lightOnSurfaceVariant,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
           ),
-          SizedBox(height: 24),
-          _buildInfoSection('Date & Time', [
-            'Starts: ${_formatDateTime(widget.event.startDateTime)}',
-            'Ends: ${_formatDateTime(widget.event.endDateTime)}',
-            'Registration Deadline: ${_formatDateTime(widget.event.entryDeadline)}',
-          ]),
-          _buildInfoSection('Location', [
-            widget.event.locationType.toString().split('.').last,
-            if (widget.event.location != null) widget.event.location!,
-          ]),
-          _buildInfoSection('Tournament Details', [
-            'Format: ${widget.event.format.toString().split('.').last}',
-            'Max Participants: ${widget.event.maxParticipants}',
-            'Entry Fee: ${widget.event.feeType == EventFeeType.free ? 'Free' : '\$${widget.event.entryFee}'}',
-          ]),
-          if (widget.event.eligibilityRules != null)
-            _buildInfoSection(
-                'Eligibility Rules', [widget.event.eligibilityRules!]),
         ],
       ),
     );
   }
 
   Widget _buildFeedbackTab() {
-    return Consumer<FeedbackProvider>(
-      builder: (context, feedbackProvider, child) {
-        return FutureBuilder<bool>(
-          future: feedbackProvider.canUserProvideFeedback(widget.event.id),
-          builder: (context, snapshot) {
-            final canProvideFeedback = snapshot.data ?? false;
-            
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: FeedbackDisplay(
-                event: widget.event,
-                showSubmitButton: canProvideFeedback,
-                onFeedbackSubmitted: () {
-                  // Refresh feedback data
-                  setState(() {});
+    return Container(
+      color: AppColors.lightBackground,
+      child: Consumer<FeedbackProvider>(
+        builder: (context, feedbackProvider, child) {
+          return StreamBuilder<List<dynamic>>(
+            stream: feedbackProvider.getEventFeedback(widget.event.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.lightPrimary,
+                    ),
+                  ),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: AppColors.lightError,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error loading feedback',
+                        style: TextStyle(
+                          color: AppColors.lightOnSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final feedbackList = snapshot.data ?? [];
+              
+              if (feedbackList.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.feedback_outlined,
+                        size: 64,
+                        color: AppColors.lightOnSurfaceVariant,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No feedback yet',
+                        style: TextStyle(
+                          color: AppColors.lightOnSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Be the first to share your thoughts!',
+                        style: TextStyle(
+                          color: AppColors.lightOnSurfaceVariant,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: feedbackList.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.lightSurface,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: FeedbackDisplay(
+                      event: widget.event,
+                    ),
+                  );
                 },
-              ),
-            );
-          },
-        );
-      },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -178,88 +443,62 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => RegistrationForm(
-        event: widget.event,
-        onSubmit: (formData) async {
-          try {
-            final result =
-                await Provider.of<EventProvider>(context, listen: false)
-                    .registerForEvent(
-              widget.event.id,
-              fullName: formData['fullName']!,
-              email: formData['email']!,
-              phone: formData['phone']!,
-              gender: formData['gender']!,
-              location: formData['location']!,
-            );
-
-            if (result['feeType'] == EventFeeType.paid && mounted) {
-              Navigator.pop(context); // Close form
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PaymentScreen(
-                    event: widget.event,
-                    registrationId: result['registrationId'],
-                    onPaymentProofUploaded: (File file) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Payment proof uploaded successfully!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                      // Handle the uploaded file if needed
-                    },
-                  ),
-                ),
-              );
-            } else if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Successfully registered!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              Navigator.pop(context);
-            }
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Registration failed: $e'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          }
-        },
-      ),
-    );
-  }
-
-  Widget _buildInfoSection(String title, List<String> details) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onBackground,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.lightSurface,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
         ),
-        SizedBox(height: 8),
-        ...details.map((detail) => Padding(
-              padding: EdgeInsets.only(bottom: 4),
-              child: Text(detail, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            )),
-        SizedBox(height: 24),
-      ],
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  height: 4,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.lightOnSurfaceVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: RegistrationForm(
+                        event: widget.event,
+                        onSubmit: (registrationData) {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PaymentScreen(
+                                event: widget.event,
+                                registrationId: registrationData['id'] ?? '',
+                                onPaymentProofUploaded: (file) {
+                                  // Handle payment completion
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}';
   }
 }

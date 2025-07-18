@@ -1,4 +1,4 @@
-import 'package:compete_hub/core/utils/app_colors.dart';
+import 'package:compete_hub/core/utils/theme.dart';
 import 'package:compete_hub/firebase_options.dart';
 import 'package:compete_hub/providers/auth_provider.dart';
 import 'package:compete_hub/src/providers/event_provider.dart';
@@ -39,9 +39,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => NewsProvider()),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: lightTheme,
-        themeMode: ThemeMode.light,
+        title: 'Compete Hub',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
         home: SignUpScreen(),
       ),
     );

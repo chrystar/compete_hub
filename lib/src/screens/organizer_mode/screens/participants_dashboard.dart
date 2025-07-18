@@ -19,17 +19,19 @@ class _ParticipantsDashboardState extends State<ParticipantsDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
+        backgroundColor: colorScheme.primary,
         title: Text(widget.event.feeType == EventFeeType.paid
             ? 'Approved Participants'
-            : 'All Participants'),
+            : 'All Participants', style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary)),
       ),
       body: Column(
         children: [
-          _buildSearchField(),
+          _buildSearchField(colorScheme, textTheme),
           Expanded(
             child: StreamBuilder<List<Registration>>(
               stream: widget.event.feeType == EventFeeType.free
@@ -39,7 +41,7 @@ class _ParticipantsDashboardState extends State<ParticipantsDashboard> {
                       .getApprovedPaidRegistrations(widget.event.id),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(child: Text('Error: ${snapshot.error}', style: textTheme.bodyLarge?.copyWith(color: colorScheme.error)));
                 }
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -58,10 +60,10 @@ class _ParticipantsDashboardState extends State<ParticipantsDashboard> {
                     .toList();
 
                 if (filteredRegistrations.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       'No participants found',
-                      style: TextStyle(color: Colors.white),
+                      style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
                     ),
                   );
                 }
@@ -71,7 +73,7 @@ class _ParticipantsDashboardState extends State<ParticipantsDashboard> {
                   padding: const EdgeInsets.all(8),
                   itemBuilder: (context, index) {
                     final registration = filteredRegistrations[index];
-                    return _buildParticipantCard(registration);
+                    return _buildParticipantCard(registration, colorScheme, textTheme);
                   },
                 );
               },
@@ -82,18 +84,18 @@ class _ParticipantsDashboardState extends State<ParticipantsDashboard> {
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
       padding: const EdgeInsets.all(16),
       child: TextField(
-        style: const TextStyle(color: Colors.white),
+        style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: 'Search participants...',
-          hintStyle: TextStyle(color: Colors.white70),
-          prefixIcon: Icon(Icons.search, color: Colors.white70),
+          hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+          prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.deepPurple.shade300),
+            borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.3)),
           ),
         ),
         onChanged: (value) => setState(() => _searchQuery = value),
@@ -101,37 +103,37 @@ class _ParticipantsDashboardState extends State<ParticipantsDashboard> {
     );
   }
 
-  Widget _buildParticipantCard(Registration registration) {
+  Widget _buildParticipantCard(Registration registration, ColorScheme colorScheme, TextTheme textTheme) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: ExpansionTile(
-        title: Text(registration.fullName),
-        subtitle: Text(registration.email),
-        trailing: _buildStatusChip(registration.paymentStatus),
+        title: Text(registration.fullName, style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface)),
+        subtitle: Text(registration.email, style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+        trailing: _buildStatusChip(registration.paymentStatus, colorScheme, textTheme),
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('Phone', registration.phone),
-                _buildInfoRow('Gender', registration.gender),
-                _buildInfoRow('Location', registration.location),
+                _buildInfoRow('Phone', registration.phone, colorScheme, textTheme),
+                _buildInfoRow('Gender', registration.gender, colorScheme, textTheme),
+                _buildInfoRow('Location', registration.location, colorScheme, textTheme),
                 _buildInfoRow('Registration Date',
-                    registration.registrationDate.toString()),
+                    registration.registrationDate.toString(), colorScheme, textTheme),
                 if (registration.paymentStatus == PaymentStatus.pending)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton.icon(
-                        icon: const Icon(Icons.check, color: Colors.green),
-                        label: const Text('Approve'),
+                        icon: Icon(Icons.check, color: colorScheme.secondary),
+                        label: Text('Approve', style: textTheme.labelLarge?.copyWith(color: colorScheme.secondary)),
                         onPressed: () => _updateStatus(
                             registration.id, PaymentStatus.approved),
                       ),
                       TextButton.icon(
-                        icon: const Icon(Icons.close, color: Colors.red),
-                        label: const Text('Reject'),
+                        icon: Icon(Icons.close, color: colorScheme.error),
+                        label: Text('Reject', style: textTheme.labelLarge?.copyWith(color: colorScheme.error)),
                         onPressed: () => _updateStatus(
                             registration.id, PaymentStatus.rejected),
                       ),
@@ -145,23 +147,23 @@ class _ParticipantsDashboardState extends State<ParticipantsDashboard> {
     );
   }
 
-  Widget _buildStatusChip(PaymentStatus status) {
+  Widget _buildStatusChip(PaymentStatus status, ColorScheme colorScheme, TextTheme textTheme) {
     final colors = {
-      PaymentStatus.pending: Colors.orange,
-      PaymentStatus.approved: Colors.green,
-      PaymentStatus.rejected: Colors.red,
+      PaymentStatus.pending: colorScheme.tertiary ?? colorScheme.primary,
+      PaymentStatus.approved: colorScheme.secondary,
+      PaymentStatus.rejected: colorScheme.error,
     };
 
     return Chip(
       label: Text(
         status.toString().split('.').last,
-        style: const TextStyle(color: Colors.white),
+        style: textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary),
       ),
       backgroundColor: colors[status],
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(String label, String value, ColorScheme colorScheme, TextTheme textTheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -171,10 +173,10 @@ class _ParticipantsDashboardState extends State<ParticipantsDashboard> {
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
             ),
           ),
-          Expanded(child: Text(value)),
+          Expanded(child: Text(value, style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant))),
         ],
       ),
     );

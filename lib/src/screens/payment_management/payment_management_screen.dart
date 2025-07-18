@@ -12,17 +12,19 @@ class PaymentManagementScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     if (event.feeType == EventFeeType.free) {
       return Scaffold(
-        backgroundColor: AppColors.lightPrimary,
+        backgroundColor: colorScheme.primary,
         appBar: AppBar(
-          backgroundColor: AppColors.lightPrimary,
+          backgroundColor: colorScheme.primary,
           title: const Text('Payment Management'),
         ),
-        body: const Center(
+        body: Center(
           child: Text(
             'Payment management not available for free events',
-            style: TextStyle(color: Colors.white),
+            style: textTheme.bodyLarge?.copyWith(color: colorScheme.onPrimary),
           ),
         ),
       );
@@ -31,9 +33,9 @@ class PaymentManagementScreen extends StatelessWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: AppColors.lightPrimary,
+        backgroundColor: colorScheme.primary,
         appBar: AppBar(
-          backgroundColor: AppColors.lightPrimary,
+          backgroundColor: colorScheme.primary,
           title: const Text('Payment Management'),
           bottom: const TabBar(
             tabs: [
@@ -63,6 +65,8 @@ class _PaymentList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     print(
         'Building PaymentList for event: ${event.id}, status: ${status.name}');
     return StreamBuilder<List<Registration>>(
@@ -97,12 +101,12 @@ class _PaymentList extends StatelessWidget {
                           ? Icons.check_circle
                           : Icons.cancel,
                   size: 64,
-                  color: Colors.white54,
+                  color: colorScheme.onPrimary.withOpacity(0.54),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'No ${status.toString().split('.').last.toLowerCase()} registrations',
-                  style: const TextStyle(color: Colors.white),
+                  'No  ${status.toString().split('.').last.toLowerCase()} registrations',
+                  style: textTheme.bodyLarge?.copyWith(color: colorScheme.onPrimary),
                 ),
               ],
             ),
@@ -147,8 +151,8 @@ class _PaymentList extends StatelessWidget {
                                 icon: const Icon(Icons.check_circle),
                                 label: const Text('Approve'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: colorScheme.secondary,
+                                  foregroundColor: colorScheme.onSecondary,
                                 ),
                                 onPressed: () => _showConfirmationDialog(
                                   context,
@@ -161,8 +165,8 @@ class _PaymentList extends StatelessWidget {
                                 icon: const Icon(Icons.cancel),
                                 label: const Text('Reject'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: colorScheme.error,
+                                  foregroundColor: colorScheme.onError,
                                 ),
                                 onPressed: () => _showConfirmationDialog(
                                   context,
@@ -185,23 +189,36 @@ class _PaymentList extends StatelessWidget {
   }
 
   Widget _buildStatusIndicator(Registration registration) {
-    // Update to use registration's actual status instead of tab status
-    final statusColor = registration.paymentStatus == PaymentStatus.approved
-        ? Colors.green
-        : registration.paymentStatus == PaymentStatus.rejected
-            ? Colors.red
-            : Colors.orange;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        registration.paymentStatus.toString().split('.').last,
-        style: TextStyle(color: statusColor),
-      ),
+    // context is not available here, so pass colorScheme from build
+    // Instead, require context as a parameter
+    return Builder(
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        Color statusColor;
+        switch (registration.paymentStatus) {
+          case PaymentStatus.approved:
+            statusColor = colorScheme.secondary;
+            break;
+          case PaymentStatus.rejected:
+            statusColor = colorScheme.error;
+            break;
+          case PaymentStatus.pending:
+          default:
+            statusColor = colorScheme.tertiary ?? colorScheme.primary;
+            break;
+        }
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: statusColor.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            registration.paymentStatus.toString().split('.').last,
+            style: TextStyle(color: statusColor),
+          ),
+        );
+      },
     );
   }
 
@@ -266,7 +283,9 @@ class _PaymentList extends StatelessWidget {
             content:
                 Text('Registration ${newStatus.toString().split('.').last}'),
             backgroundColor:
-                newStatus == PaymentStatus.approved ? Colors.green : Colors.red,
+                newStatus == PaymentStatus.approved
+                    ? Theme.of(context).colorScheme.secondary
+                    : Theme.of(context).colorScheme.error,
           ),
         );
       }

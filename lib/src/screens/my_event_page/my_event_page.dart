@@ -25,18 +25,22 @@ class _MyEventPageState extends State<MyEventPage>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
+        backgroundColor: colorScheme.surface,
         automaticallyImplyLeading: false,
-        title: const Text('My Events', 
-            style: TextStyle(color: Colors.white, fontSize: 24)),
+        title: Text('My Events', style: textTheme.titleLarge?.copyWith(color: colorScheme.onSurface, fontSize: 24)),
         actions: [
-          _buildNotificationBadge(context),
+          _buildNotificationBadge(context, colorScheme),
         ],
         bottom: TabBar(
           controller: _tabController,
+          labelColor: colorScheme.onSurface,
+          unselectedLabelColor: colorScheme.onSurfaceVariant,
+          indicatorColor: colorScheme.primary,
           tabs: const [
             Tab(text: 'Events'),
             Tab(text: 'Notifications'),
@@ -46,14 +50,14 @@ class _MyEventPageState extends State<MyEventPage>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildEventsTab(),
-          _buildNotificationsTab(),
+          _buildEventsTab(colorScheme, textTheme),
+          _buildNotificationsTab(colorScheme, textTheme),
         ],
       ),
     );
   }
 
-  Widget _buildNotificationBadge(BuildContext context) {
+  Widget _buildNotificationBadge(BuildContext context, ColorScheme colorScheme) {
     return StreamBuilder<List<Announcement>>(
       stream: Provider.of<EventProvider>(context).getMyNotifications(),
       builder: (context, snapshot) {
@@ -62,7 +66,7 @@ class _MyEventPageState extends State<MyEventPage>
         return Stack(
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications),
+              icon: Icon(Icons.notifications, color: colorScheme.onPrimary),
               onPressed: () => _tabController.animateTo(1),
             ),
             if (hasUnread)
@@ -72,7 +76,7 @@ class _MyEventPageState extends State<MyEventPage>
                 child: Container(
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: Colors.red,
+                    color: colorScheme.error,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   constraints: const BoxConstraints(
@@ -87,7 +91,7 @@ class _MyEventPageState extends State<MyEventPage>
     );
   }
 
-  Widget _buildEventsTab() {
+  Widget _buildEventsTab(ColorScheme colorScheme, TextTheme textTheme) {
     return Consumer<EventProvider>(
       builder: (context, provider, child) {
         return StreamBuilder<List<String>>(
@@ -95,8 +99,8 @@ class _MyEventPageState extends State<MyEventPage>
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Center(
-                child: Text('Error: ${snapshot.error}',
-                    style: const TextStyle(color: Colors.white)),
+                child: Text('Error:  ${snapshot.error}',
+                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.error)),
               );
             }
 
@@ -107,10 +111,10 @@ class _MyEventPageState extends State<MyEventPage>
             final registeredEventIds = snapshot.data ?? [];
 
             if (registeredEventIds.isEmpty) {
-              return const Center(
+              return Center(
                 child: Text(
                   'You haven\'t registered for any events yet',
-                  style: TextStyle(color: Colors.white),
+                  style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
                 ),
               );
             }
@@ -132,10 +136,13 @@ class _MyEventPageState extends State<MyEventPage>
                   itemCount: registeredEvents.length,
                   itemBuilder: (context, index) {
                     final event = registeredEvents[index];
-                    return EventCard(
-                      event: event,
-                      onRegister: () {},
-                      isRegistered: true,
+                    return Card(
+                      color: colorScheme.surface,
+                      child: EventCard(
+                        event: event,
+                        onRegister: () {},
+                        isRegistered: true,
+                      ),
                     );
                   },
                 );
@@ -147,7 +154,7 @@ class _MyEventPageState extends State<MyEventPage>
     );
   }
 
-  Widget _buildNotificationsTab() {
+  Widget _buildNotificationsTab(ColorScheme colorScheme, TextTheme textTheme) {
     return Consumer<EventProvider>(
       builder: (context, provider, child) {
         return StreamBuilder<List<Announcement>>(
@@ -159,10 +166,10 @@ class _MyEventPageState extends State<MyEventPage>
 
             final notifications = snapshot.data!;
             if (notifications.isEmpty) {
-              return const Center(
+              return Center(
                 child: Text(
                   'No notifications yet',
-                  style: TextStyle(color: Colors.white),
+                  style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
                 ),
               );
             }
@@ -173,16 +180,16 @@ class _MyEventPageState extends State<MyEventPage>
                 final notification = notifications[index];
                 return Card(
                   color: notification.isRead
-                      ? Colors.black12
-                      : Colors.deepPurple.withOpacity(0.2),
+                      ? colorScheme.surfaceVariant
+                      : colorScheme.secondary.withOpacity(0.2),
                   child: ListTile(
                     title: Text(
                       notification.message,
-                      style: const TextStyle(color: Colors.white),
+                      style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
                     ),
                     subtitle: Text(
                       _formatDateTime(notification.timestamp),
-                      style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                     onTap: () => provider.markNotificationRead(notification.id),
                   ),

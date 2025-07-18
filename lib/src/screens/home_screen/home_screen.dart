@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../../models/event.dart';
 import '../../providers/event_provider.dart';
 import '../../widgets/event_card.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../models/event_category.dart' as event_category;
 import '../../screens/event_details/event_details_screen.dart';
 import '../../widgets/registration_form.dart';
@@ -21,30 +20,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  final Connectivity _connectivity = Connectivity();
-  bool _isOnline = true;
   late TabController _tabController;
   event_category.EventCategory? _selectedCategory;
-
-  Future<void> _checkConnectivity() async {
-    final connectivityResults = await _connectivity.checkConnectivity();
-    _updateConnectionStatus(connectivityResults.first);
-  }
-
-  void _updateConnectionStatus(ConnectivityResult result) {
-    setState(() {
-      _isOnline = result != ConnectivityResult.none;
-    });
-  }
 
   @override
   void initState() {
     super.initState();
     _initializeTabController();
-    _checkConnectivity();
-    _connectivity.onConnectivityChanged.listen((results) {
-      _updateConnectionStatus(results.first);
-    });
   }
 
   void _initializeTabController() {
@@ -73,58 +55,94 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text(
+        title: Text(
           'C-vents',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
+          style: textTheme.titleLarge?.copyWith(
+            color: colorScheme.onSurface,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
           ),
         ),
         centerTitle: true,
         leading: Padding(
-          padding: const EdgeInsets.only(left: 10),
+          padding: const EdgeInsets.only(left: 12),
           child: GestureDetector(
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(builder: (context) => ProfilePage())),
-            child: UserAvatar(
-              color: const Color.fromARGB(255, 67, 81, 126),
-              name: Provider.of<EventProvider>(context)
-                      .currentUser
-                      ?.displayName ??
-                  'U',
-              imageUrl:
-                  Provider.of<EventProvider>(context).currentUser?.photoURL,
-              size: 20,
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: UserAvatar(
+                color: colorScheme.primary,
+                name: Provider.of<EventProvider>(context)
+                        .currentUser
+                        ?.displayName ??
+                    'U',
+                imageUrl:
+                    Provider.of<EventProvider>(context).currentUser?.photoURL,
+                size: 18,
+              ),
             ),
           ),
         ),
-        leadingWidth: 50,
-        actionsIconTheme: const IconThemeData(color: Colors.white),
+        leadingWidth: 56,
         actions: [
-          Icon(Icons.notifications, color: Colors.white),
-          const SizedBox(width: 16),
+          Container(
+            margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.notifications_outlined,
+              color: colorScheme.primary,
+              size: 20,
+            ),
+          ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          indicatorColor: Colors.white,
-          dividerColor: Colors.grey.shade900,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.grey.shade600,
-          tabs: [
-            const Tab(text: 'All'),
-            ...event_category.EventCategory.values.map((category) {
-              return Tab(
-                text: category.toString().split('.').last,
-              );
-            }).toList(),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Container(
+            color: colorScheme.surface,
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              indicatorColor: colorScheme.primary,
+              indicatorWeight: 3,
+              dividerColor: colorScheme.outline,
+              labelColor: colorScheme.primary,
+              unselectedLabelColor: colorScheme.onSurfaceVariant,
+              labelStyle: textTheme.labelMedium?.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: textTheme.labelMedium?.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+              tabs: [
+                const Tab(text: 'All'),
+                ...event_category.EventCategory.values.map((category) {
+                  return Tab(
+                    text: category.toString().split('.').last,
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
         ),
       ),
       body: Column(
@@ -141,14 +159,45 @@ class _HomeScreenState extends State<HomeScreen>
                     if (snapshot.hasError) {
                       print('Stream error: ${snapshot.error}');
                       return Center(
-                        child: Text('Error: ${snapshot.error}',
-                            style: const TextStyle(color: Colors.white)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 64,
+                              color: colorScheme.error,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Something went wrong',
+                              style: textTheme.bodyLarge?.copyWith(
+                                color: colorScheme.onSurface,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Please try again later',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     }
 
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       print('Stream is waiting for data');
-                      return const Center(child: CircularProgressIndicator());
+                      return Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            colorScheme.primary,
+                          ),
+                        ),
+                      );
                     }
 
                     final events = snapshot.data ?? [];
@@ -177,43 +226,85 @@ class _HomeScreenState extends State<HomeScreen>
 
                     if (filteredEvents.isEmpty) {
                       return Center(
-                        child: Text(
-                          _selectedCategory == null
-                              ? 'No events yet'
-                              : 'No events in this category',
-                          style: TextStyle(color: Colors.white),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _selectedCategory == null
+                                  ? Icons.event_outlined
+                                  : Icons.category_outlined,
+                              size: 64,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _selectedCategory == null
+                                  ? 'No events yet'
+                                  : 'No events in this category',
+                              style: textTheme.bodyLarge?.copyWith(
+                                color: colorScheme.onSurface,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Check back later for new events',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     }
 
-                    return ListView.builder(
-                      padding: const EdgeInsets.only(left: 10, right: 10,),
-                      itemCount: filteredEvents.length,
-                      itemBuilder: (context, index) {
-                        final event = filteredEvents[index];
-                        return GestureDetector(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EventDetailsScreen(event: event),
-                            ),
-                          ),
-                          child: StreamBuilder<bool>(
+                    return Container(
+                      color: colorScheme.background,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: filteredEvents.length,
+                        itemBuilder: (context, index) {
+                          final event = filteredEvents[index];
+                          return StreamBuilder<bool>(
                             stream: eventProvider
                                 .isRegisteredForEventStream(event.id),
                             builder: (context, snapshot) {
                               final isRegistered = snapshot.data ?? false;
-                              return EventCard(
-                                event: event,
-                                onRegister: isRegistered
-                                    ? null
-                                    : () => _registerForEvent(event),
-                                isRegistered: isRegistered,
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: isRegistered ? BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppColors.lightPrimary.withOpacity(0.05),
+                                      AppColors.lightPrimaryVariant.withOpacity(0.02),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                ) : null,
+                                child: GestureDetector(
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => EventDetailsScreen(event: event),
+                                    ),
+                                  ),
+                                  child: EventCard(
+                                    event: event,
+                                    onRegister: isRegistered
+                                        ? null
+                                        : () => _registerForEvent(event),
+                                    isRegistered: isRegistered,
+                                  ),
+                                ),
                               );
                             },
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     );
                   },
                 );

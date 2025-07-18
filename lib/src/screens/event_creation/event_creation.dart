@@ -89,36 +89,59 @@ class _EventCreationState extends State<EventCreation> {
   }
 
   InputDecoration _getInputDecoration(String label, {String? hintText}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return InputDecoration(
       labelText: label,
       hintText: hintText,
-      labelStyle: TextStyle(color: Colors.white),
-      hintStyle: TextStyle(color: Colors.white70),
+      labelStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+      hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+      filled: true,
+      fillColor: colorScheme.surfaceVariant,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.deepPurple.shade300),
+        borderSide: BorderSide(color: colorScheme.outline),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.deepPurple.shade300, width: 2),
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
       ),
-      floatingLabelStyle: TextStyle(color: Colors.white),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: colorScheme.error),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
-        title: const Text('Create Event'),
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+        elevation: 0,
+        title: Text(
+          'Create Event',
+          style: textTheme.titleLarge?.copyWith(
+            color: colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4.0),
-          child: LinearProgressIndicator(
-            value: (_currentPage + 1) / 3,
-            backgroundColor: Colors.grey[300],
-            color: Colors.deepPurple.shade400,
+          preferredSize: const Size.fromHeight(8.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: LinearProgressIndicator(
+              value: (_currentPage + 1) / 3,
+              backgroundColor: colorScheme.surfaceVariant,
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
         ),
       ),
@@ -129,19 +152,19 @@ class _EventCreationState extends State<EventCreation> {
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildBasicInfoPage(),
-                _buildDateTimePage(),
-                _buildSettingsPage(),
+                _buildBasicInfoPage(colorScheme, textTheme),
+                _buildDateTimePage(colorScheme, textTheme),
+                _buildSettingsPage(colorScheme, textTheme),
               ],
             ),
           ),
-          _buildNavigationButtons(),
+          _buildNavigationButtons(colorScheme, textTheme),
         ],
       ),
     );
   }
 
-  Widget _buildBasicInfoPage() {
+  Widget _buildBasicInfoPage(ColorScheme colorScheme, TextTheme textTheme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -154,7 +177,7 @@ class _EventCreationState extends State<EventCreation> {
                 height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.deepPurple.shade300),
+                  border: Border.all(color: colorScheme.primary.withOpacity(0.3)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: _bannerImage != null
@@ -167,12 +190,12 @@ class _EventCreationState extends State<EventCreation> {
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(Icons.add_photo_alternate,
-                              size: 50, color: Colors.white70),
-                          SizedBox(height: 8),
+                              size: 50, color: colorScheme.onSurfaceVariant),
+                          const SizedBox(height: 8),
                           Text('Add Event Banner',
-                              style: TextStyle(color: Colors.white70)),
+                              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
                         ],
                       ),
               ),
@@ -182,16 +205,16 @@ class _EventCreationState extends State<EventCreation> {
               // Update with prefix
               value: _category,
               decoration: _getInputDecoration('Event Category'),
-              dropdownColor: Colors.deepPurple.shade300,
-              style: TextStyle(color: Colors.white),
+              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: categories.EventCategory.values.map((category) {
                 // Update with prefix
                 return DropdownMenuItem(
                   value: category,
                   child: Row(
                     children: [
-                      Icon(category.icon, color: Colors.white),
-                      SizedBox(width: 8),
+                      Icon(category.icon, color: colorScheme.onSurface),
+                      const SizedBox(width: 8),
                       Text(category.toString().split('.').last),
                     ],
                   ),
@@ -205,7 +228,7 @@ class _EventCreationState extends State<EventCreation> {
             TextFormField(
               controller: _nameController,
               decoration: _getInputDecoration('Event Name'),
-              style: TextStyle(color: Colors.white),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               validator: (value) =>
                   value?.isEmpty ?? true ? 'Please enter event name' : null,
             ),
@@ -213,7 +236,7 @@ class _EventCreationState extends State<EventCreation> {
             TextFormField(
               controller: _descriptionController,
               decoration: _getInputDecoration('Description'),
-              style: TextStyle(color: Colors.white),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               maxLines: 3,
               validator: (value) =>
                   value?.isEmpty ?? true ? 'Please enter description' : null,
@@ -222,8 +245,8 @@ class _EventCreationState extends State<EventCreation> {
             DropdownButtonFormField<EventLocationType>(
               value: _locationType,
               decoration: _getInputDecoration('Location Type'),
-              dropdownColor: Colors.deepPurple.shade300,
-              style: TextStyle(color: Colors.white),
+              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: EventLocationType.values.map((type) {
                 return DropdownMenuItem(
                   value: type,
@@ -239,7 +262,7 @@ class _EventCreationState extends State<EventCreation> {
               TextFormField(
                 controller: _locationController,
                 decoration: _getInputDecoration('Venue Location'),
-                style: TextStyle(color: Colors.white),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                 validator: (value) =>
                     value?.isEmpty ?? true ? 'Please enter location' : null,
               ),
@@ -250,7 +273,7 @@ class _EventCreationState extends State<EventCreation> {
     );
   }
 
-  Widget _buildDateTimePage() {
+  Widget _buildDateTimePage(ColorScheme colorScheme, TextTheme textTheme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -280,7 +303,7 @@ class _EventCreationState extends State<EventCreation> {
     );
   }
 
-  Widget _buildSettingsPage() {
+  Widget _buildSettingsPage(ColorScheme colorScheme, TextTheme textTheme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -290,8 +313,8 @@ class _EventCreationState extends State<EventCreation> {
             DropdownButtonFormField<TournamentFormat>(
               value: _format,
               decoration: _getInputDecoration('Tournament Format'),
-              dropdownColor: Colors.deepPurple.shade300,
-              style: TextStyle(color: Colors.white),
+              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: TournamentFormat.values.map((format) {
                 return DropdownMenuItem(
                   value: format,
@@ -306,7 +329,7 @@ class _EventCreationState extends State<EventCreation> {
             TextFormField(
               controller: _organizerInfoController,
               decoration: _getInputDecoration('Organizer Info'),
-              style: TextStyle(color: Colors.white),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               validator: (value) =>
                   value?.isEmpty ?? true ? 'Please enter organizer info' : null,
             ),
@@ -314,7 +337,7 @@ class _EventCreationState extends State<EventCreation> {
             TextFormField(
               controller: _maxParticipantsController,
               decoration: _getInputDecoration('Max Participants'),
-              style: TextStyle(color: Colors.white),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               keyboardType: TextInputType.number,
               validator: (value) {
                 if (value?.isEmpty ?? true)
@@ -328,8 +351,8 @@ class _EventCreationState extends State<EventCreation> {
             DropdownButtonFormField<EventFeeType>(
               value: _feeType,
               decoration: _getInputDecoration('Entry Fee Type'),
-              dropdownColor: Colors.deepPurple.shade300,
-              style: TextStyle(color: Colors.white),
+              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: EventFeeType.values.map((type) {
                 return DropdownMenuItem(
                   value: type,
@@ -345,7 +368,7 @@ class _EventCreationState extends State<EventCreation> {
               TextFormField(
                 controller: _entryFeeController,
                 decoration: _getInputDecoration('Entry Fee Amount'),
-                style: TextStyle(color: Colors.white),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value?.isEmpty ?? true) return 'Please enter fee amount';
@@ -384,15 +407,15 @@ class _EventCreationState extends State<EventCreation> {
               controller: _eligibilityRulesController,
               decoration: _getInputDecoration('Eligibility Rules',
                   hintText: 'Optional'),
-              style: TextStyle(color: Colors.white),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               maxLines: 3,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<EventVisibility>(
               value: _visibility,
               decoration: _getInputDecoration('Event Visibility'),
-              dropdownColor: Colors.deepPurple.shade300,
-              style: TextStyle(color: Colors.white),
+              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: EventVisibility.values.map((visibility) {
                 return DropdownMenuItem(
                   value: visibility,
@@ -409,7 +432,7 @@ class _EventCreationState extends State<EventCreation> {
     );
   }
 
-  Widget _buildNavigationButtons() {
+  Widget _buildNavigationButtons(ColorScheme colorScheme, TextTheme textTheme) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -418,7 +441,7 @@ class _EventCreationState extends State<EventCreation> {
           if (_currentPage > 0)
             ElevatedButton(
               onPressed: _previousPage,
-              child: const Text('Previous'),
+              child: Text('Previous'),
             )
           else
             const SizedBox(),
@@ -438,19 +461,21 @@ class _EventCreationState extends State<EventCreation> {
     required DateTime value,
     required Function(DateTime) onChanged,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.deepPurple.shade300),
+        border: Border.all(color: colorScheme.primary.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         title: Text(
           label,
-          style: const TextStyle(color: Colors.white),
+          style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
         ),
         subtitle: Text(
           value.toString(),
-          style: const TextStyle(color: Colors.white70),
+          style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         onTap: () async {
           final date = await showDatePicker(
@@ -546,10 +571,10 @@ class _EventCreationState extends State<EventCreation> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Event created successfully!'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
         Navigator.pushReplacementNamed(context, '/home');

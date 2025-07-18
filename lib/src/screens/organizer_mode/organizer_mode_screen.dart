@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../core/utils/app_colors.dart';
 import '../../providers/event_provider.dart';
 import '../../models/event.dart';
 import '../event_creation/event_creation.dart';
@@ -11,14 +10,16 @@ class OrganizerModeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
-        title: const Text('My Events'),
+        backgroundColor: colorScheme.surface,
+        title: Text('My Events', style: textTheme.titleLarge?.copyWith(color: colorScheme.onSurface)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add, color: colorScheme.primary),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const EventCreation()),
@@ -33,8 +34,8 @@ class OrganizerModeScreen extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return Center(
-                  child: Text('Error: ${snapshot.error}',
-                      style: const TextStyle(color: Colors.white)),
+                  child: Text('Error:  ${snapshot.error}',
+                      style: textTheme.bodyLarge?.copyWith(color: colorScheme.error)),
                 );
               }
 
@@ -48,9 +49,9 @@ class OrganizerModeScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         'No events created yet',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
+                        style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface, fontSize: 18),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
@@ -60,8 +61,12 @@ class OrganizerModeScreen extends StatelessWidget {
                             builder: (_) => const EventCreation(),
                           ),
                         ),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Create Event'),
+                        icon: Icon(Icons.add, color: colorScheme.primary),
+                        label: Text('Create Event', style: textTheme.labelLarge?.copyWith(color: colorScheme.primary)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.surface,
+                          foregroundColor: colorScheme.primary,
+                        ),
                       ),
                     ],
                   ),
@@ -74,15 +79,15 @@ class OrganizerModeScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final event = events[index];
                   return Card(
-                    color: Colors.white.withOpacity(0.1),
+                    color: colorScheme.surface,
                     child: ListTile(
                       title: Text(
                         event.name,
-                        style: const TextStyle(color: Colors.white),
+                        style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
                       ),
                       subtitle: Text(
                         event.description,
-                        style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7)),
                       ),
                       onTap: () => Navigator.push(
                         context,
@@ -91,15 +96,15 @@ class OrganizerModeScreen extends StatelessWidget {
                         ),
                       ),
                       trailing: PopupMenuButton(
-                        icon: const Icon(Icons.more_vert, color: Colors.white),
+                        icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
                         itemBuilder: (_) => [
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'edit',
-                            child: Text('Edit'),
+                            child: Text('Edit', style: textTheme.bodyMedium),
                           ),
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'delete',
-                            child: Text('Delete'),
+                            child: Text('Delete', style: textTheme.bodyMedium),
                           ),
                         ],
                         onSelected: (value) async {

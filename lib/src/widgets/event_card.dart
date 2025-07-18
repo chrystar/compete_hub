@@ -1,5 +1,3 @@
-import 'package:compete_hub/src/models/registration.dart';
-import 'package:compete_hub/src/widgets/user_avatar.dart';
 import 'package:compete_hub/src/screens/feedback/event_feedback_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,26 +5,36 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/utils/app_colors.dart';
 import '../models/event.dart';
 import '../providers/event_provider.dart';
-import '../models/event_category.dart' as event_category;
 
 class EventCard extends StatelessWidget {
   final Event event;
   final VoidCallback? onRegister;
   final bool isRegistered;
+  final bool hideFeedbackButton;
 
   const EventCard({
     Key? key,
     required this.event,
     this.onRegister,
     this.isRegistered = false,
+    this.hideFeedbackButton = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: isRegistered
-          ? Colors.blue.withOpacity(0.2)
-          : Colors.white.withOpacity(0.1),
+      elevation: 2,
+      shadowColor: AppColors.lightPrimary.withOpacity(0.1),
+      color: AppColors.lightBackground,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isRegistered 
+              ? AppColors.lightPrimary.withOpacity(0.3)
+              : AppColors.lightPrimary.withOpacity(0.08),
+          width: isRegistered ? 2 : 1,
+        ),
+      ),
       child: Stack(
         //clipBehavior: Clip.none,
         children: [
@@ -100,16 +108,16 @@ class EventCard extends StatelessWidget {
                   children: [
                     Text(
                       event.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      style:  TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.lightPrimary.withOpacity(1),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       event.description,
-                      style: const TextStyle(color: Colors.white70),
+                      style: const TextStyle(color: AppColors.lightOnSurfaceVariant),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -118,12 +126,12 @@ class EventCard extends StatelessWidget {
                           event.locationType == EventLocationType.online
                               ? Icons.computer
                               : Icons.location_on,
-                          color: Colors.white70,
+                          color: AppColors.lightOnSurfaceVariant,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           event.location ?? 'Online',
-                          style: const TextStyle(color: Colors.white70),
+                          style: const TextStyle(color: AppColors.lightOnSurfaceVariant),
                         ),
                       ],
                     ),
@@ -140,7 +148,7 @@ class EventCard extends StatelessWidget {
                           const Text(
                             'Creator',
                             style: TextStyle(
-                              color: Colors.grey,
+                              color: AppColors.lightPrimaryVariant,
                               fontWeight: FontWeight.w400,
                             ),
                           )
@@ -161,25 +169,26 @@ class EventCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => EventFeedbackScreen(event: event),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.feedback, size: 16),
-                            label: const Text('Feedback'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white.withOpacity(0.8),
-                              side: BorderSide(color: Colors.white.withOpacity(0.3)),
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                        if (!hideFeedbackButton)
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EventFeedbackScreen(event: event),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.feedback, size: 16),
+                              label: const Text('Live a Feedback'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.lightOnSurfaceVariant,
+                                side: BorderSide(color: AppColors.lightOnSurfaceVariant.withOpacity(0.3)),
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ],
@@ -216,8 +225,8 @@ class EventCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.blue.shade900,
-            Colors.purple.shade900,
+            Colors.blue.shade700,
+            Colors.purple.shade700,
           ],
         ),
       ),

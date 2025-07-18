@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/utils/app_colors.dart';
 import '../../models/event.dart';
 import '../../models/feedback.dart';
 import '../../providers/feedback_provider.dart';
@@ -62,19 +63,21 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        title: const Text(
+        backgroundColor: colorScheme.background,
+        title: Text(
           'Event Feedback',
+          style: textTheme.titleLarge?.copyWith(color: colorScheme.onBackground),
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Theme.of(context).colorScheme.onPrimary,
-          unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
-          indicatorColor: Colors.amber,
+          labelColor: colorScheme.onBackground,
+          unselectedLabelColor: colorScheme.onSurfaceVariant,
+          indicatorColor: colorScheme.primary,
           tabs: const [
             Tab(text: 'Overview'),
             Tab(text: 'All Reviews'),
@@ -84,37 +87,37 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildOverviewTab(),
-          _buildAllReviewsTab(),
+          _buildOverviewTab(colorScheme, textTheme),
+          _buildAllReviewsTab(colorScheme, textTheme),
         ],
       ),
       floatingActionButton: widget.canSubmitFeedback && _userFeedback == null
           ? FloatingActionButton.extended(
               onPressed: _showFeedbackForm,
-              backgroundColor: _isEventOngoing ? Colors.red : Colors.amber,
-              icon: Icon(_isEventOngoing ? Icons.live_help : Icons.rate_review),
-              label: Text(_isEventOngoing ? 'Live Feedback' : 'Add Review'),
+              backgroundColor: _isEventOngoing ? colorScheme.error : colorScheme.secondary,
+              icon: Icon(_isEventOngoing ? Icons.live_help : Icons.rate_review, color: colorScheme.onSecondary),
+              label: Text(_isEventOngoing ? 'Live Feedback' : 'Add Review', style: textTheme.labelLarge?.copyWith(color: colorScheme.onSecondary)),
             )
           : _userFeedback != null
               ? FloatingActionButton.extended(
                   onPressed: _editFeedback,
-                  backgroundColor: Colors.blue,
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Edit Review'),
+                  backgroundColor: colorScheme.primary,
+                  icon: Icon(Icons.edit, color: colorScheme.onPrimary),
+                  label: Text('Edit Review', style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary)),
                 )
               : null,
     );
   }
 
-  Widget _buildOverviewTab() {
+  Widget _buildOverviewTab(ColorScheme colorScheme, TextTheme textTheme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildEventInfo(),
+          _buildEventInfo(colorScheme, textTheme),
           const SizedBox(height: 20),
-          if (_userFeedback != null) _buildUserFeedbackCard(),
+          if (_userFeedback != null) _buildUserFeedbackCard(colorScheme, textTheme),
           if (_userFeedback != null) const SizedBox(height: 20),
           FeedbackDisplay(
             event: widget.event,
@@ -126,7 +129,7 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
     );
   }
 
-  Widget _buildAllReviewsTab() {
+  Widget _buildAllReviewsTab(ColorScheme colorScheme, TextTheme textTheme) {
     return Consumer<FeedbackProvider>(
       builder: (context, feedbackProvider, child) {
         return StreamBuilder<List<EventFeedback>>(
@@ -146,23 +149,21 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
                     Icon(
                       Icons.rate_review_outlined,
                       size: 64,
-                      color: Colors.white.withOpacity(0.5),
+                      color: colorScheme.onSurface.withOpacity(0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'No feedback yet',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 18,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.7),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Be the first to share your experience!',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
-                        fontSize: 14,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.5),
                       ),
                     ),
                   ],
@@ -174,7 +175,7 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
               padding: const EdgeInsets.all(16),
               itemCount: feedbacks.length,
               itemBuilder: (context, index) {
-                return _buildDetailedFeedbackCard(feedbacks[index]);
+                return _buildDetailedFeedbackCard(feedbacks[index], colorScheme, textTheme);
               },
             );
           },
@@ -183,11 +184,11 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
     );
   }
 
-  Widget _buildEventInfo() {
+  Widget _buildEventInfo(ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -195,85 +196,77 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
         children: [
           Text(
             widget.event.name,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onBackground,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             widget.event.description,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 14,
-            ),
+            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onPrimaryContainer.withOpacity(0.8)),
           ),
-          const SizedBox(height: 12),            Row(
-              children: [
-                Icon(
-                  _isEventOngoing ? Icons.live_tv : Icons.event,
-                  color: _isEventOngoing ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant,
-                  size: 16,
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(
+                _isEventOngoing ? Icons.live_tv : Icons.event,
+                color: _isEventOngoing ? colorScheme.error : colorScheme.onPrimaryContainer.withOpacity(0.7),
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _isEventOngoing ? 'Event is ongoing' : 'Event completed',
+                style: textTheme.bodySmall?.copyWith(
+                  color: _isEventOngoing ? colorScheme.error : colorScheme.onPrimaryContainer.withOpacity(0.7),
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  _isEventOngoing ? 'Event is ongoing' : 'Event completed',
-                  style: TextStyle(
-                    color: _isEventOngoing ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildUserFeedbackCard() {
+  Widget _buildUserFeedbackCard(ColorScheme colorScheme, TextTheme textTheme) {
     if (_userFeedback == null) return const SizedBox.shrink();
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        border: Border.all(color: colorScheme.surfaceVariant, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.account_circle,
-                color: Colors.blue,
+                color: colorScheme.primary,
                 size: 20,
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Your Feedback',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 16,
+                style: textTheme.titleSmall?.copyWith(
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const Spacer(),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.star,
-                    color: Colors.amber,
+                    color: colorScheme.secondary,
                     size: 16,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     _userFeedback!.overallRating.toStringAsFixed(1),
-                    style: const TextStyle(
-                      color: Colors.amber,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.secondary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -285,35 +278,29 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
             const SizedBox(height: 12),
             Text(
               _userFeedback!.comment!,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onPrimary),
             ),
           ],
           const SizedBox(height: 12),
           Text(
             'Submitted ${_formatTimeAgo(_userFeedback!.timestamp)}',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
-              fontSize: 12,
-            ),
+            style: textTheme.bodySmall?.copyWith(color: colorScheme.onPrimary.withOpacity(0.6)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailedFeedbackCard(EventFeedback feedback) {
+  Widget _buildDetailedFeedbackCard(EventFeedback feedback, ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: feedback.isDuringEvent 
-            ? Border.all(color: Colors.red.withOpacity(0.5), width: 1)
-            : null,
+            ? Border.all(color: colorScheme.error.withOpacity(0.5), width: 1)
+            : Border.all(color: colorScheme.surfaceVariant, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,15 +309,15 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: Colors.white.withOpacity(0.2),
+                backgroundColor: colorScheme.onSurface.withOpacity(0.2),
                 child: Text(
                   feedback.isAnonymous 
                       ? 'A'
                       : feedback.userName.isNotEmpty 
                           ? feedback.userName[0].toUpperCase()
                           : '?',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -344,8 +331,8 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
                       children: [
                         Text(
                           feedback.isAnonymous ? 'Anonymous' : feedback.userName,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: textTheme.titleSmall?.copyWith(
+                            color: colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -355,13 +342,13 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.red,
+                              color: colorScheme.error,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Text(
+                            child: Text(
                               'LIVE',
-                              style: TextStyle(
-                                color: Colors.white,
+                              style: textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onError,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -372,8 +359,8 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
                     ),
                     Text(
                       _formatTimeAgo(feedback.timestamp),
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 12,
                       ),
                     ),
@@ -383,22 +370,22 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.2),
+                  color: colorScheme.secondary.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.star,
-                      color: Colors.amber,
+                      color: colorScheme.secondary,
                       size: 16,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       feedback.overallRating.toStringAsFixed(1),
-                      style: const TextStyle(
-                        color: Colors.amber,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -408,26 +395,25 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
             ],
           ),
           const SizedBox(height: 12),
-          _buildRatingDetails(feedback),
+          _buildRatingDetails(feedback, colorScheme, textTheme),
           if (feedback.comment != null && feedback.comment!.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
               feedback.comment!,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
                 height: 1.4,
               ),
             ),
           ],
           const SizedBox(height: 12),
-          _buildFeedbackActions(feedback),
+          _buildFeedbackActions(feedback, colorScheme, textTheme),
         ],
       ),
     );
   }
 
-  Widget _buildRatingDetails(EventFeedback feedback) {
+  Widget _buildRatingDetails(EventFeedback feedback, ColorScheme colorScheme, TextTheme textTheme) {
     return Wrap(
       spacing: 12,
       runSpacing: 8,
@@ -435,7 +421,7 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
@@ -443,8 +429,8 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
             children: [
               Text(
                 _getFeedbackTypeLabel(entry.key),
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.8),
                   fontSize: 12,
                 ),
               ),
@@ -454,7 +440,7 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
                 children: List.generate(5, (index) {
                   return Icon(
                     index < entry.value ? Icons.star : Icons.star_border,
-                    color: Colors.amber,
+                    color: colorScheme.secondary,
                     size: 12,
                   );
                 }),
@@ -466,7 +452,7 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
     );
   }
 
-  Widget _buildFeedbackActions(EventFeedback feedback) {
+  Widget _buildFeedbackActions(EventFeedback feedback, ColorScheme colorScheme, TextTheme textTheme) {
     return Row(
       children: [
         Consumer<FeedbackProvider>(
@@ -482,14 +468,14 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
                         : Icons.thumb_up_outlined,
                     size: 16,
                     color: feedback.upvotes.isNotEmpty 
-                        ? Colors.blue 
-                        : Colors.white.withOpacity(0.6),
+                        ? colorScheme.primary 
+                        : colorScheme.onSurface.withOpacity(0.6),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '${feedback.upvotes.length}',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.6),
                       fontSize: 12,
                     ),
                   ),
@@ -507,13 +493,13 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
               Icon(
                 Icons.flag_outlined,
                 size: 16,
-                color: Colors.white.withOpacity(0.6),
+                color: colorScheme.onSurface.withOpacity(0.6),
               ),
               const SizedBox(width: 4),
               Text(
                 'Report',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.6),
                   fontSize: 12,
                 ),
               ),
@@ -589,12 +575,12 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Report Feedback'),
-        content: const Text('Why are you reporting this feedback?'),
+        title: Text('Report Feedback'),
+        content: Text('Why are you reporting this feedback?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
@@ -602,10 +588,10 @@ class _EventFeedbackScreenState extends State<EventFeedbackScreen>
               await feedbackProvider.flagFeedback(feedback.id, 'Inappropriate content');
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Feedback reported')),
+                SnackBar(content: Text('Feedback reported')),
               );
             },
-            child: const Text('Report'),
+            child: Text('Report'),
           ),
         ],
       ),

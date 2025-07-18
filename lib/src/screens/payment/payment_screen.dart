@@ -28,11 +28,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: AppColors.lightPrimary,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
-        backgroundColor: AppColors.lightPrimary,
-        title: const Text('Payment Details'),
+        backgroundColor: colorScheme.primary,
+        title: Text('Payment Details', style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -47,8 +49,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   children: [
                     Text(
                       'Bank Transfer Details',
-                      style: TextStyle(
-                        color: Colors.black,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -56,7 +58,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     const SizedBox(height: 8),
                     Text(
                       widget.event.bankDetails,
-                      style: TextStyle(color: Colors.black54),
+                      style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -65,8 +67,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: 16),
             Text(
               'Upload Payment Proof',
-              style: TextStyle(
-                color: Colors.white,
+              style: textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurface,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -84,11 +86,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white),
+                  border: Border.all(color: colorScheme.primary),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.add_photo_alternate, color: Colors.white),
+                  icon: Icon(Icons.add_photo_alternate, color: colorScheme.primary),
                   onPressed: _pickImage,
                 ),
               ),
@@ -101,7 +103,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     : _submitPayment,
                 child: _isLoading
                     ? const CircularProgressIndicator()
-                    : const Text('Submit Payment Proof'),
+                    : Text('Submit Payment Proof', style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary)),
               ),
             ),
           ],
@@ -160,20 +162,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
 
       if (mounted) {
+        final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Payment proof submitted successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: colorScheme.secondary,
           ),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
+        final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error submitting payment: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: colorScheme.error,
           ),
         );
       }
