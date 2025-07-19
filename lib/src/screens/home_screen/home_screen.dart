@@ -348,21 +348,24 @@ class _HomeScreenState extends State<HomeScreen>
               location: formData['location']!,
             );
 
+            print('Registration successful, event feeType: ${event.feeType}');
             if (event.feeType == EventFeeType.paid && mounted) {
+              print('About to pop registration modal for paid event');
               Navigator.pop(context);
+              print('Modal popped, about to navigate to PaymentScreen');
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => PaymentScreen(
                     event: event,
-                    registrationId: registrationId['id'] as String,
+                    registrationId: registrationId['registrationId'] as String,
                     onPaymentProofUploaded: (proofUrl) {
-                      // Handle the uploaded payment proof URL here
                       print('Payment proof uploaded: $proofUrl');
                     },
                   ),
                 ),
-              );
+              ).then((_) => print('Returned from PaymentScreen'));
+              print('Navigation to PaymentScreen triggered');
             } else if (mounted) {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -373,7 +376,7 @@ class _HomeScreenState extends State<HomeScreen>
               );
             }
           } catch (e) {
-            // ...existing code...
+            print('Error during registration or navigation: $e');
           }
         },
       ),

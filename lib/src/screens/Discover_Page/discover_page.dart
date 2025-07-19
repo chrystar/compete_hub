@@ -66,7 +66,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
           children: [
             _buildSectionTitle('Popular Events', textTheme, colorScheme),
             SizedBox(
-              height: 280,
+              height: MediaQuery.of(context).size.height * 0.45,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: _buildPopularEvents(),
@@ -75,7 +75,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
             const SizedBox(height: 24),
             _buildSectionTitle('Latest News', textTheme, colorScheme),
             SizedBox(
-              height: 200,
+              height: MediaQuery.of(context).size.height * 0.25,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: _buildNewsSection(colorScheme, textTheme),
@@ -110,25 +110,28 @@ class _DiscoverPageState extends State<DiscoverPage> {
           stream: provider.getPopularEvents(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Center(child: Text('Error:  ${snapshot.error}'));
+              return Center(child: Text('Error: ${snapshot.error}'));
             }
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
 
             final events = snapshot.data!;
-
-            return PageView.builder(
+            
+            return
+              ListView.builder(
+              scrollDirection: Axis.horizontal,
               itemCount: events.length,
-              controller: PageController(viewportFraction: 0.85),
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 16),
+              shrinkWrap: true,
+              itemBuilder: (context, index){
+                return Container(
+                 width: MediaQuery.of(context).size.width * 0.85,
+                  margin: const EdgeInsets.only(right: 16),
                   child: EventCard(
                     event: events[index],
                     onRegister: () {},
                     isRegistered: false,
-                    hideFeedbackButton: true,
+                    showFeedbackButton: false,
                   ),
                 );
               },
@@ -239,7 +242,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
   void _showNewsDetails(News news, ColorScheme colorScheme, TextTheme textTheme) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: colorScheme.primary,
+      backgroundColor: colorScheme.onPrimary,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),

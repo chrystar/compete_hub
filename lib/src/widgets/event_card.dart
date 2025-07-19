@@ -10,14 +10,14 @@ class EventCard extends StatelessWidget {
   final Event event;
   final VoidCallback? onRegister;
   final bool isRegistered;
-  final bool hideFeedbackButton;
+  final bool showFeedbackButton;
 
   const EventCard({
     Key? key,
     required this.event,
     this.onRegister,
     this.isRegistered = false,
-    this.hideFeedbackButton = false,
+    this.showFeedbackButton = true,
   }) : super(key: key);
 
   @override
@@ -169,7 +169,7 @@ class EventCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        if (!hideFeedbackButton)
+                        if (showFeedbackButton)
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
