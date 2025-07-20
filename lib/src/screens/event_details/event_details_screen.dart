@@ -475,9 +475,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                       padding: const EdgeInsets.all(24),
                       child: RegistrationForm(
                         event: widget.event,
-                        onSubmit: (registrationData) {
+                        onSubmit: (registrationData) async {
                           Navigator.pop(context);
-                          Navigator.push(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => PaymentScreen(

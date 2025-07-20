@@ -124,6 +124,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (_selectedImage == null) return;
 
     setState(() => _isLoading = true);
+    final paymentProvider = Provider.of<PaymentProvider>(context, listen: false); // Capture provider early
     try {
       if (widget.event.organizerWhatsApp.isNotEmpty) {
         final whatsappUrl = Uri.parse(
@@ -153,8 +154,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       }
 
       // Create pending payment record
-      await Provider.of<PaymentProvider>(context, listen: false)
-          .submitPaymentProof(
+      await paymentProvider.submitPaymentProof(
         eventId: widget.event.id,
         registrationId: widget.registrationId,
         proofImage: _selectedImage!,

@@ -4,7 +4,7 @@ import '../models/event.dart';
 
 class RegistrationForm extends StatefulWidget {
   final Event event;
-  final Function(Map<String, String> formData) onSubmit;
+  final Future<void> Function(Map<String, String> formData) onSubmit;
 
   const RegistrationForm({
     super.key,
@@ -20,6 +20,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final _formKey = GlobalKey<FormState>();
   final _formData = <String, String>{};
   String _selectedGender = 'Male';
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -113,13 +114,22 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     backgroundColor: colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  onPressed: _submit,
-                  child: Text(
-                    widget.event.feeType == EventFeeType.paid
-                        ? 'Continue to Payment'
-                        : 'Register',
-                    style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
-                  ),
+                  onPressed: _isLoading ? null : _submit,
+                  child: _isLoading
+                      ? SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Text(
+                          widget.event.feeType == EventFeeType.paid
+                              ? 'Continue to Payment'
+                              : 'Register',
+                          style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
+                        ),
                 ),
               ),
             ],
@@ -152,10 +162,15 @@ class _RegistrationFormState extends State<RegistrationForm> {
     );
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
-      widget.onSubmit(_formData);
+      setState(() => _isLoading = true);
+      try {
+        await widget.onSubmit(_formData);
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 }

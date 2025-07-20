@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/utils/app_colors.dart';
 import 'package:compete_hub/src/screens/event_creation/event_creation.dart';
+import 'package:compete_hub/src/auth/sign_in.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -236,7 +237,17 @@ class _ProfilePageState extends State<ProfilePage>
                         icon: Icons.logout,
                         title: 'Sign Out',
                         subtitle: 'Sign out of your account',
-                        onTap: () => authProvider.signOut(),
+                        onTap: () async {
+                          await authProvider.signOut();
+                          if (mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                              (route) => false,
+                            );
+                          }
+                        },
                         isDestructive: true,
                       ),
                     ],

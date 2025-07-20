@@ -39,10 +39,29 @@ class Registration {
       phone: json['phone'] ?? '',
       gender: json['gender'] ?? '',
       location: json['location'] ?? '',
-      registrationDate: (json['registrationDate'] as Timestamp).toDate(),
-      paymentStatus: PaymentStatus.values[json['paymentStatus'] ?? 0],
+      registrationDate: (json['registrationDate'] is Timestamp)
+          ? (json['registrationDate'] as Timestamp).toDate()
+          : DateTime.tryParse(json['registrationDate']?.toString() ?? '') ?? DateTime.now(),
+      paymentStatus: _parsePaymentStatus(json['paymentStatus']),
       paymentProofUrl: json['paymentProofUrl'],
     );
+  }
+
+  static PaymentStatus _parsePaymentStatus(dynamic value) {
+    if (value == null) return PaymentStatus.pending;
+    if (value is int) {
+      // fallback for old data
+      return PaymentStatus.values[value];
+    }
+    if (value is String) {
+      // Try to match enum by name or full string
+      for (final status in PaymentStatus.values) {
+        if (value == status.toString() || value == status.name) {
+          return status;
+        }
+      }
+    }
+    return PaymentStatus.pending;
   }
 
   Map<String, dynamic> toMap() {

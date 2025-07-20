@@ -5,12 +5,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/utils/app_colors.dart';
 import '../models/event.dart';
 import '../providers/event_provider.dart';
+import '../models/registration.dart'; // Add this import
 
 class EventCard extends StatelessWidget {
   final Event event;
   final VoidCallback? onRegister;
   final bool isRegistered;
   final bool showFeedbackButton;
+  final PaymentStatus? paymentStatus; // Add this
 
   const EventCard({
     Key? key,
@@ -18,14 +20,16 @@ class EventCard extends StatelessWidget {
     this.onRegister,
     this.isRegistered = false,
     this.showFeedbackButton = true,
+    this.paymentStatus,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final hasEnded = event.endDateTime.isBefore(DateTime.now());
     return Card(
       elevation: 2,
       shadowColor: AppColors.lightPrimary.withOpacity(0.1),
-      color: AppColors.lightBackground,
+      color: hasEnded ? Colors.grey.shade200 : AppColors.lightBackground,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -35,168 +39,218 @@ class EventCard extends StatelessWidget {
           width: isRegistered ? 2 : 1,
         ),
       ),
-      child: Stack(
-        //clipBehavior: Clip.none,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Stack(
-                children: [
-                  _buildBannerImage(),
-                  Positioned(
-                    top: 6,
-                    right: 8, // Remove conditional positioning
-                    child: StreamBuilder<int>(
-                      stream: Provider.of<EventProvider>(context)
-                          .getEventLikes(event.id),
-                      builder: (context, snapshot) {
-                        final likes = snapshot.data ?? 0;
-                        final hasLiked = Provider.of<EventProvider>(context)
-                            .hasUserLikedEvent(event.id);
-
-                        return Container(
-                          height: 35,
-                          padding: EdgeInsets.only(left: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.lightPrimary,
-                            borderRadius: BorderRadius.circular(12),
-                            //border: Border.all(color: Colors.grey)
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '$likes',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              IconButton(
-                                icon: Icon(
-                                  hasLiked == true
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: hasLiked == true
-                                      ? Colors.red
-                                      : Colors.white,
-                                ),
-                                onPressed: () {
-                                  Provider.of<EventProvider>(context,
-                                          listen: false)
-                                      .toggleEventLike(event.id);
-                                },
-                                constraints: const BoxConstraints(),
-                                padding: EdgeInsets.zero,
-                                iconSize: 18,
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: Opacity(
+        opacity: hasEnded ? 0.6 : 1.0,
+        child: Stack(
+          //clipBehavior: Clip.none,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Stack(
                   children: [
-                    Text(
-                      event.name,
-                      style:  TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.lightPrimary.withOpacity(1),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      event.description,
-                      style: const TextStyle(color: AppColors.lightOnSurfaceVariant),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          event.locationType == EventLocationType.online
-                              ? Icons.computer
-                              : Icons.location_on,
-                          color: AppColors.lightOnSurfaceVariant,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          event.location ?? 'Online',
-                          style: const TextStyle(color: AppColors.lightOnSurfaceVariant),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Format: ${event.format.toString().split('.').last}',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                        if (Provider.of<EventProvider>(context)
-                            .isEventOrganizer(event.organizerId))
-                          const Text(
-                            'Creator',
-                            style: TextStyle(
-                              color: AppColors.lightPrimaryVariant,
-                              fontWeight: FontWeight.w400,
+                    _buildBannerImage(),
+                    Positioned(
+                      top: 6,
+                      right: 8, // Remove conditional positioning
+                      child: StreamBuilder<int>(
+                        stream: Provider.of<EventProvider>(context)
+                            .getEventLikes(event.id),
+                        builder: (context, snapshot) {
+                          final likes = snapshot.data ?? 0;
+                          final hasLiked = Provider.of<EventProvider>(context)
+                              .hasUserLikedEvent(event.id);
+
+                          return Container(
+                            height: 35,
+                            padding: EdgeInsets.only(left: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.lightPrimary,
+                              borderRadius: BorderRadius.circular(12),
+                              //border: Border.all(color: Colors.grey)
                             ),
-                          )
-                        else if (!isRegistered)
-                          ElevatedButton(
-                            onPressed: onRegister,
-                            child: const Text('Register'),
-                          )
-                        else
-                          Text(
-                            'Registered',
-                            style: TextStyle(
-                              color: Colors.green,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        if (showFeedbackButton)
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EventFeedbackScreen(event: event),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '$likes',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                );
-                              },
-                              icon: const Icon(Icons.feedback, size: 16),
-                              label: const Text('Live a Feedback'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.lightOnSurfaceVariant,
-                                side: BorderSide(color: AppColors.lightOnSurfaceVariant.withOpacity(0.3)),
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                              ),
+                                ),
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  icon: Icon(
+                                    hasLiked == true
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: hasLiked == true
+                                        ? Colors.red
+                                        : Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    Provider.of<EventProvider>(context,
+                                            listen: false)
+                                        .toggleEventLike(event.id);
+                                  },
+                                  constraints: const BoxConstraints(),
+                                  padding: EdgeInsets.zero,
+                                  iconSize: 18,
+                                ),
+                              ],
                             ),
-                          ),
-                      ],
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ],
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        event.name,
+                        style:  TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.lightPrimary.withOpacity(1),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        event.description,
+                        style: const TextStyle(color: AppColors.lightOnSurfaceVariant),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            event.locationType == EventLocationType.online
+                                ? Icons.computer
+                                : Icons.location_on,
+                            color: AppColors.lightOnSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            event.location ?? 'Online',
+                            style: const TextStyle(color: AppColors.lightOnSurfaceVariant),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Format: ${event.format.toString().split('.').last}',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                          if (Provider.of<EventProvider>(context)
+                              .isEventOrganizer(event.organizerId))
+                            const Text(
+                              'Creator',
+                              style: TextStyle(
+                                color: AppColors.lightPrimaryVariant,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            )
+                          else if (!isRegistered && !hasEnded)
+                            ElevatedButton(
+                              onPressed: onRegister,
+                              child: const Text('Register'),
+                            )
+                          else if (hasEnded)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                'Event Ended',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                          else
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: (event.feeType == EventFeeType.paid && paymentStatus == PaymentStatus.pending)
+                                    ? Colors.orange.withOpacity(0.1)
+                                    : Colors.green.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                (event.feeType == EventFeeType.paid && paymentStatus == PaymentStatus.pending)
+                                    ? 'Pending'
+                                    : 'Registered',
+                                style: TextStyle(
+                                  color: (event.feeType == EventFeeType.paid && paymentStatus == PaymentStatus.pending)
+                                      ? Colors.orange
+                                      : Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          if (showFeedbackButton || hasEnded)
+                            Expanded(
+                              child: hasEnded
+                                  ? ElevatedButton.icon(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => EventFeedbackScreen(event: event),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(Icons.feedback, size: 16, color: Colors.white),
+                                      label: const Text('Live a Feedback', style: TextStyle(color: Colors.white)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.lightPrimary,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                      ),
+                                    )
+                                  : OutlinedButton.icon(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => EventFeedbackScreen(event: event),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(Icons.feedback, size: 16),
+                                      label: const Text('Live a Feedback'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.lightOnSurfaceVariant,
+                                        side: BorderSide(color: AppColors.lightOnSurfaceVariant.withOpacity(0.3)),
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                      ),
+                                    ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -10,6 +10,7 @@ import '../../models/event_category.dart' as event_category;
 import '../../screens/event_details/event_details_screen.dart';
 import '../../widgets/registration_form.dart';
 import '../payment/payment_screen.dart';
+import '../../models/registration.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -267,39 +268,57 @@ class _HomeScreenState extends State<HomeScreen>
                         itemCount: filteredEvents.length,
                         itemBuilder: (context, index) {
                           final event = filteredEvents[index];
-                          return StreamBuilder<bool>(
-                            stream: eventProvider
-                                .isRegisteredForEventStream(event.id),
-                            builder: (context, snapshot) {
-                              final isRegistered = snapshot.data ?? false;
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 16),
-                                decoration: isRegistered ? BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      AppColors.lightPrimary.withOpacity(0.05),
-                                      AppColors.lightPrimaryVariant.withOpacity(0.02),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                ) : null,
-                                child: GestureDetector(
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => EventDetailsScreen(event: event),
+                          final userId = Provider.of<EventProvider>(context, listen: false).currentUserId;
+                          return StreamBuilder<List<Registration>>(
+                            stream: eventProvider.getEventRegistrations(event.id),
+                            builder: (context, regSnapshot) {
+                              PaymentStatus? paymentStatus;
+                              Registration? reg;
+                              if (regSnapshot.hasData) {
+                                final regs = regSnapshot.data!;
+                                for (final r in regs) {
+                                  if (r.userId == userId) {
+                                    reg = r;
+                                    break;
+                                  }
+                                }
+                                paymentStatus = reg?.paymentStatus;
+                              }
+                              return StreamBuilder<bool>(
+                                stream: eventProvider.isRegisteredForEventStream(event.id),
+                                builder: (context, snapshot) {
+                                  final isRegistered = snapshot.data ?? false;
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    decoration: isRegistered
+                                        ? BoxDecoration(
+                                            borderRadius: BorderRadius.circular(16),
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                AppColors.lightPrimary.withOpacity(0.05),
+                                                AppColors.lightPrimaryVariant.withOpacity(0.02),
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                          )
+                                        : null,
+                                    child: GestureDetector(
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => EventDetailsScreen(event: event),
+                                        ),
+                                      ),
+                                      child: EventCard(
+                                        event: event,
+                                        onRegister: isRegistered ? null : () => _registerForEvent(event),
+                                        isRegistered: isRegistered,
+                                        paymentStatus: paymentStatus,
+                                      ),
                                     ),
-                                  ),
-                                  child: EventCard(
-                                    event: event,
-                                    onRegister: isRegistered
-                                        ? null
-                                        : () => _registerForEvent(event),
-                                    isRegistered: isRegistered,
-                                  ),
-                                ),
+                                  );
+                                },
                               );
                             },
                           );
