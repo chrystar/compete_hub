@@ -73,7 +73,9 @@ class _EventCreationState extends State<EventCreation> {
         );
         setState(() => _currentPage++);
       } else {
-        _submitForm();
+        if (!_isLoading) {
+          _submitForm();
+        }
       }
     }
   }
@@ -205,7 +207,7 @@ class _EventCreationState extends State<EventCreation> {
               // Update with prefix
               value: _category,
               decoration: _getInputDecoration('Event Category'),
-              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              dropdownColor: Colors.white, // Set to white
               style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: categories.EventCategory.values.map((category) {
                 // Update with prefix
@@ -245,7 +247,7 @@ class _EventCreationState extends State<EventCreation> {
             DropdownButtonFormField<EventLocationType>(
               value: _locationType,
               decoration: _getInputDecoration('Location Type'),
-              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              dropdownColor: Colors.white, // Set to white
               style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: EventLocationType.values.map((type) {
                 return DropdownMenuItem(
@@ -313,7 +315,7 @@ class _EventCreationState extends State<EventCreation> {
             DropdownButtonFormField<TournamentFormat>(
               value: _format,
               decoration: _getInputDecoration('Tournament Format'),
-              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              dropdownColor: Colors.white, // Set to white
               style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: TournamentFormat.values.map((format) {
                 return DropdownMenuItem(
@@ -351,7 +353,7 @@ class _EventCreationState extends State<EventCreation> {
             DropdownButtonFormField<EventFeeType>(
               value: _feeType,
               decoration: _getInputDecoration('Entry Fee Type'),
-              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              dropdownColor: Colors.white, // Set to white
               style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: EventFeeType.values.map((type) {
                 return DropdownMenuItem(
@@ -414,7 +416,7 @@ class _EventCreationState extends State<EventCreation> {
             DropdownButtonFormField<EventVisibility>(
               value: _visibility,
               decoration: _getInputDecoration('Event Visibility'),
-              dropdownColor: colorScheme.primary.withOpacity(0.3),
+              dropdownColor: Colors.white, // Set to white
               style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               items: EventVisibility.values.map((visibility) {
                 return DropdownMenuItem(
@@ -505,8 +507,8 @@ class _EventCreationState extends State<EventCreation> {
   }
 
   Future<void> _submitForm() async {
+    if (_isLoading) return;
     if (!_formKeys[_currentPage].currentState!.validate()) return;
-
     setState(() => _isLoading = true);
 
     try {

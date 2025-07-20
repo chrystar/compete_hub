@@ -91,20 +91,27 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
                 child: IconButton(
                   icon: Icon(Icons.add_photo_alternate, color: colorScheme.primary),
-                  onPressed: _pickImage,
+                  onPressed: () {
+                    print('Add photo button pressed');
+                    _pickImage();
+                  },
                 ),
               ),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading || _selectedImage == null
-                    ? null
-                    : _submitPayment,
-                child: _isLoading
-                    ? const CircularProgressIndicator()
-                    : Text('Submit Payment Proof', style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary)),
-              ),
+            Builder(
+              builder: (context) {
+                final isButtonEnabled = !_isLoading && _selectedImage != null;
+                print('Upload button enabled: $isButtonEnabled, isLoading: $_isLoading, hasImage: $_selectedImage != null');
+                return SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isButtonEnabled ? _submitPayment : null,
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : Text('Submit Payment Proof', style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary)),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -113,29 +120,58 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _pickImage() async {
+    print('Pick image called');
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
+      print('Image selected: ${image.path}');
       setState(() => _selectedImage = File(image.path));
+    } else {
+      print('No image picked');
     }
   }
 
   Future<void> _submitPayment() async {
-    if (_selectedImage == null) return;
+    print('Submit payment called');
+    if (_selectedImage == null) {
+      print('No image selected');
+      return;
+    }
 
     setState(() => _isLoading = true);
-    final paymentProvider = Provider.of<PaymentProvider>(context, listen: false); // Capture provider early
+    final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
     try {
+      print('Starting payment submission...');
       if (widget.event.organizerWhatsApp.isNotEmpty) {
+        final message = 'Payment proof for event: ${widget.event.name}';
         final whatsappUrl = Uri.parse(
-            'https://wa.me/${widget.event.organizerWhatsApp}?text=Payment proof for event: ${widget.event.name}');
-        await Share.shareXFiles(
-          [XFile(_selectedImage!.path)],
-          text:
-              'Payment proof for event: ${widget.event.name}\nAmount: \$${widget.event.entryFee}',
+          'https://wa.me/${widget.event.organizerWhatsApp}?text=${Uri.encodeComponent(message)}'
         );
-        if (await canLaunchUrl(whatsappUrl)) {
-          await launchUrl(whatsappUrl);
+        print('Sharing file...');
+        try {
+          await Share.shareXFiles(
+            [XFile(_selectedImage!.path)],
+            text: '$message\nAmount: \$${widget.event.entryFee}',
+          ).timeout(const Duration(seconds: 10));
+        } catch (e) {
+          print('Share failed: $e');
+        }
+        print('Checking if can launch WhatsApp...');
+        try {
+          if (await canLaunchUrl(whatsappUrl)) {
+            print('Launching WhatsApp...');
+            await launchUrl(whatsappUrl).timeout(const Duration(seconds: 10));
+            print('WhatsApp launched.');
+          } else {
+            print('WhatsApp cannot be launched.');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('WhatsApp is not installed or cannot be opened.')),
+              );
+            }
+          }
+        } catch (e) {
+          print('WhatsApp launch failed: $e');
         }
       } else if (widget.event.organizerEmail.isNotEmpty) {
         final emailUri = Uri(
@@ -143,17 +179,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
           path: widget.event.organizerEmail,
           query: 'subject=Payment proof for ${widget.event.name}',
         );
-        await Share.shareXFiles(
-          [XFile(_selectedImage!.path)],
-          text:
-              'Payment proof for event: ${widget.event.name}\nAmount: \$${widget.event.entryFee}',
-        );
-        if (await canLaunchUrl(emailUri)) {
-          await launchUrl(emailUri);
+        try {
+          await Share.shareXFiles(
+            [XFile(_selectedImage!.path)],
+            text: 'Payment proof for event: ${widget.event.name}\nAmount: \$${widget.event.entryFee}',
+          ).timeout(const Duration(seconds: 10));
+        } catch (e) {
+          print('Share (email) failed: $e');
+        }
+        try {
+          if (await canLaunchUrl(emailUri)) {
+            await launchUrl(emailUri).timeout(const Duration(seconds: 10));
+          }
+        } catch (e) {
+          print('Email launch failed: $e');
         }
       }
 
-      // Create pending payment record
+      print('Submitting payment proof to Firestore...');
       await paymentProvider.submitPaymentProof(
         eventId: widget.event.id,
         registrationId: widget.registrationId,
@@ -171,7 +214,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
         );
         Navigator.pop(context);
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print('Error in _submitPayment: $e');
+      print(stack);
       if (mounted) {
         final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -183,6 +228,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       }
     } finally {
       setState(() => _isLoading = false);
+      print('Payment submission finished.');
     }
   }
 }

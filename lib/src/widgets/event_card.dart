@@ -6,6 +6,10 @@ import '../../core/utils/app_colors.dart';
 import '../models/event.dart';
 import '../providers/event_provider.dart';
 import '../models/registration.dart'; // Add this import
+import 'package:compete_hub/src/screens/payment/payment_screen.dart'; // Add this import
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import 'package:compete_hub/src/auth/sign_in.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
@@ -13,6 +17,7 @@ class EventCard extends StatelessWidget {
   final bool isRegistered;
   final bool showFeedbackButton;
   final PaymentStatus? paymentStatus; // Add this
+  final String? registrationId; // Add this
 
   const EventCard({
     Key? key,
@@ -21,11 +26,14 @@ class EventCard extends StatelessWidget {
     this.isRegistered = false,
     this.showFeedbackButton = true,
     this.paymentStatus,
+    this.registrationId,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final hasEnded = event.endDateTime.isBefore(DateTime.now());
+    final authProvider = Provider.of<AuthProviders>(context, listen: false);
+    final isAuthenticated = authProvider.currentUser != null;
     return Card(
       elevation: 2,
       shadowColor: AppColors.lightPrimary.withOpacity(0.1),
@@ -160,9 +168,46 @@ class EventCard extends StatelessWidget {
                             )
                           else if (!isRegistered && !hasEnded)
                             ElevatedButton(
-                              onPressed: onRegister,
+                              onPressed: isAuthenticated
+                                  ? onRegister
+                                  : () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const LoginScreen(),
+                                        ),
+                                      );
+                                    },
                               child: const Text('Register'),
                             )
+                          else if (isRegistered && event.feeType == EventFeeType.paid && paymentStatus == PaymentStatus.pending && !hasEnded)
+                            isAuthenticated
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'Pending',
+                                      style: TextStyle(
+                                        color: Colors.orange,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  )
+                                : ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const LoginScreen(),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                                    child: const Text('Login to Complete Registration'),
+                                  )
                           else if (hasEnded)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

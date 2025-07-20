@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
 import * as sgMail from '@sendgrid/mail';
 import axios from 'axios';
@@ -75,4 +75,28 @@ export const sendWhatsAppMessage = functions.https.onRequest(async (req, res) =>
   } catch (error) {
     res.status(500).send(error.message);
   }
+});
+
+// Cascade delete related data when an event is deleted
+export const cascadeDeleteEvent = functions.firestore.document('events/{eventId}').onDelete(async (snap, context) => {
+  const eventId = context.params.eventId;
+  const db = admin.firestore();
+
+  // Helper to delete all docs in a collection with a query
+  async function deleteCollection(query: FirebaseFirestore.Query) {
+    const snapshot = await query.get();
+    if (snapshot.empty) return;
+    const batch = db.batch();
+    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+  }
+
+  await Promise.all([
+    deleteCollection(db.collection('registrations').where('eventId', '==', eventId)),
+    deleteCollection(db.collection('payments').where('eventId', '==', eventId)),
+    deleteCollection(db.collection('event_feedback').where('eventId', '==', eventId)),
+    deleteCollection(db.collection('matches').where('eventId', '==', eventId)),
+    deleteCollection(db.collection('announcements').where('eventId', '==', eventId)),
+    // Add more collections as needed
+  ]);
 });

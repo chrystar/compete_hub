@@ -165,6 +165,7 @@ class EventProvider with ChangeNotifier {
       query = query.where('visibility',
           isEqualTo: EventVisibility.public.toString());
     }
+    query = query.orderBy('createdAt', descending: true); // Newest first
 
     return query.snapshots().map((snapshot) {
       return snapshot.docs

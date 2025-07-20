@@ -284,41 +284,37 @@ class _HomeScreenState extends State<HomeScreen>
                                 }
                                 paymentStatus = reg?.paymentStatus;
                               }
-                              return StreamBuilder<bool>(
-                                stream: eventProvider.isRegisteredForEventStream(event.id),
-                                builder: (context, snapshot) {
-                                  final isRegistered = snapshot.data ?? false;
-                                  return Container(
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    decoration: isRegistered
-                                        ? BoxDecoration(
-                                            borderRadius: BorderRadius.circular(16),
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                AppColors.lightPrimary.withOpacity(0.05),
-                                                AppColors.lightPrimaryVariant.withOpacity(0.02),
-                                              ],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                          )
-                                        : null,
-                                    child: GestureDetector(
-                                      onTap: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => EventDetailsScreen(event: event),
+                              final isRegistered = reg != null;
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: isRegistered
+                                    ? BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            AppColors.lightPrimary.withOpacity(0.05),
+                                            AppColors.lightPrimaryVariant.withOpacity(0.02),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
                                         ),
-                                      ),
-                                      child: EventCard(
-                                        event: event,
-                                        onRegister: isRegistered ? null : () => _registerForEvent(event),
-                                        isRegistered: isRegistered,
-                                        paymentStatus: paymentStatus,
-                                      ),
+                                      )
+                                    : null,
+                                child: GestureDetector(
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => EventDetailsScreen(event: event),
                                     ),
-                                  );
-                                },
+                                  ),
+                                  child: EventCard(
+                                    event: event,
+                                    onRegister: isRegistered ? null : () => _registerForEvent(event),
+                                    isRegistered: isRegistered,
+                                    paymentStatus: paymentStatus,
+                                    registrationId: reg?.id,
+                                  ),
+                                ),
                               );
                             },
                           );

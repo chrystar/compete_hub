@@ -5,9 +5,11 @@ import 'package:compete_hub/src/providers/event_provider.dart';
 import 'package:compete_hub/src/providers/feedback_provider.dart';
 import 'package:compete_hub/src/auth/sign_up.dart';
 import 'package:compete_hub/src/providers/news_provider.dart';
+import 'package:compete_hub/src/providers/payment_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:compete_hub/src/screens/main_home_screen/main_home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +39,7 @@ class MyApp extends StatelessWidget {
           create: (_) => FeedbackProvider(),
         ),
         ChangeNotifierProvider(create: (_) => NewsProvider()),
+        ChangeNotifierProvider(create: (_) => PaymentProvider()),
       ],
       child: MaterialApp(
         title: 'Compete Hub',
@@ -44,6 +47,9 @@ class MyApp extends StatelessWidget {
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
         home: SignUpScreen(),
+        routes: {
+          '/home': (context) => const MainHomeScreen(),
+        },
       ),
     );
   }
