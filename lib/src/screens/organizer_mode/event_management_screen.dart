@@ -25,12 +25,12 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: colorScheme.primary,
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
-        backgroundColor: colorScheme.primary,
+        backgroundColor: Colors.white,
         title: Text(
           widget.event.name,
-          style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
+          style: textTheme.titleLarge?.copyWith(color: Colors.black),
         ),
       ),
       body: SingleChildScrollView(
@@ -40,7 +40,7 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
           children: [
             Text(
               'Event Dashboard',
-              style: textTheme.headlineSmall?.copyWith(color: colorScheme.onPrimary, fontSize: 24, fontWeight: FontWeight.bold),
+              style: textTheme.headlineSmall?.copyWith(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             _buildStatsRow(context, colorScheme, textTheme),

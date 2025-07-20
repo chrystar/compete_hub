@@ -37,7 +37,7 @@ class EventCard extends StatelessWidget {
     return Card(
       elevation: 2,
       shadowColor: AppColors.lightPrimary.withOpacity(0.1),
-      color: hasEnded ? Colors.grey.shade200 : AppColors.lightBackground,
+      color: AppColors.lightBackground,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -47,14 +47,11 @@ class EventCard extends StatelessWidget {
           width: isRegistered ? 2 : 1,
         ),
       ),
-      child: Opacity(
-        opacity: hasEnded ? 0.6 : 1.0,
-        child: Stack(
-          //clipBehavior: Clip.none,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
                 Stack(
                   children: [
                     _buildBannerImage(),
@@ -296,8 +293,8 @@ class EventCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
+    
   }
 
   Widget _buildBannerImage() {

@@ -1,0 +1,2 @@
+C:/Users/Chris/Documents/GitHub/compete_hub/android/app/.cxx/RelWithDebInfo/58385nh2/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/Chris/Documents/GitHub/compete_hub/android/app/.cxx/RelWithDebInfo/58385nh2/arm64-v8a/CMakeFiles/rebuild_cache.dir

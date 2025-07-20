@@ -66,7 +66,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
           children: [
             _buildSectionTitle('Popular Events', textTheme, colorScheme),
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.45,
+              height: MediaQuery.of(context).size.height * 0.55,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: _buildPopularEvents(),
@@ -120,7 +120,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
             
             return
               ListView.builder(
-              scrollDirection: Axis.horizontal,
+              scrollDirection: Axis.vertical,
               itemCount: events.length,
               shrinkWrap: true,
               itemBuilder: (context, index){

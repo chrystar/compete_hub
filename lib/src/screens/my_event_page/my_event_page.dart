@@ -155,15 +155,27 @@ class _MyEventPageState extends State<MyEventPage>
   }
 
   Widget _buildNotificationsTab(ColorScheme colorScheme, TextTheme textTheme) {
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
+    final isAuthenticated = eventProvider.currentUserId.isNotEmpty;
+    if (!isAuthenticated) {
+      return Center(
+        child: Text(
+          'Please log in to view notifications.',
+          style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
+        ),
+      );
+    }
     return Consumer<EventProvider>(
       builder: (context, provider, child) {
         return StreamBuilder<List<Announcement>>(
           stream: provider.getMyNotifications(),
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(child: Text('Error:  ${snapshot.error}'));
+            }
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
-
             final notifications = snapshot.data!;
             if (notifications.isEmpty) {
               return Center(
@@ -173,7 +185,6 @@ class _MyEventPageState extends State<MyEventPage>
                 ),
               );
             }
-
             return ListView.builder(
               itemCount: notifications.length,
               itemBuilder: (context, index) {
